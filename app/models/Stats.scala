@@ -1,19 +1,102 @@
 package models
 
 import awswrappers.dynamodb._
-import play.api.libs.json.Json
+import models.StatsTable.{EmailSendItem, EmailStats}
+import play.api.libs.json.{Writes, Json}
 import com.amazonaws.services.dynamodbv2.model._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+
+case class JsonDataPoint(name: String, data: List[Int])
+
+object JsonDataPoint {
+  implicit val JsonDataPointWrites = Json.writes[JsonDataPoint]
+}
+
+case class EmailStatsSeriesData(
+   existingUndeliverables: List[Int],
+   existingUnsubscribes: List[Int],
+   hardBounces: List[Int],
+   softBounces: List[Int],
+   otherBounces: List[Int],
+   forwardedEmails: List[Int],
+   uniqueClicks: List[Int],
+   uniqueOpens: List[Int],
+   numberSent: List[Int],
+   numberDelivered: List[Int],
+   unsubscribes: List[Int]
+   )
+
+object EmailStatsSeriesData {
+
+  implicit val EmailStatsSeriesWrites = Json.writes[EmailStatsSeriesData]
+
+  def fromTimeSeries(timeSeries: Seq[EmailStats]) = {
+    timeSeries.tail.foldLeft(EmailStatsSeriesData.fromStats(timeSeries.head)){ (acc, item) =>
+      this.add(acc, EmailStatsSeriesData.fromStats(item))
+    }
+  }
+
+  def toJson(a: EmailStatsSeriesData) = {
+    Json.toJson(List(
+      JsonDataPoint("existingUndeliverables", a.existingUndeliverables),
+      JsonDataPoint("existingUnsubscribes", a.existingUnsubscribes),
+      JsonDataPoint("hardBounces", a.hardBounces),
+      JsonDataPoint("softBounces", a.softBounces),
+      JsonDataPoint("otherBounces", a.otherBounces),
+      JsonDataPoint("forwardedEmails", a.forwardedEmails),
+      JsonDataPoint("uniqueClicks", a.uniqueClicks),
+      JsonDataPoint("uniqueOpens", a.uniqueOpens),
+      JsonDataPoint("numberSent", a.numberSent),
+      JsonDataPoint("numberDelivered", a.numberDelivered),
+      JsonDataPoint("unsubscribes", a.unsubscribes)
+    ))
+  }
+
+  def fromStats(stats: EmailStats) = {
+    EmailStatsSeriesData(
+      List(stats.existingUndeliverables),
+      List(stats.existingUnsubscribes),
+      List(stats.hardBounces),
+      List(stats.softBounces),
+      List(stats.otherBounces),
+      List(stats.forwardedEmails),
+      List(stats.uniqueClicks),
+      List(stats.uniqueOpens),
+      List(stats.numberSent),
+      List(stats.numberDelivered),
+      List(stats.unsubscribes)
+    )
+  }
+
+  def add (a: EmailStatsSeriesData, b: EmailStatsSeriesData): EmailStatsSeriesData = {
+    a.copy(
+      a.existingUndeliverables ++ b.existingUndeliverables,
+      a.existingUnsubscribes ++ b.existingUnsubscribes,
+      a.hardBounces ++ b.hardBounces,
+      a.softBounces ++ b.softBounces,
+      a.otherBounces ++ b.otherBounces,
+      a.forwardedEmails ++ b.forwardedEmails,
+      a.uniqueClicks ++ b.uniqueClicks,
+      a.uniqueOpens ++ b.uniqueOpens,
+      a.numberSent ++ b.numberSent,
+      a.numberDelivered ++ b.numberDelivered,
+      a.unsubscribes ++ b.unsubscribes
+    )
+  }
+}
 object StatsTable {
 
   object EmailSendItem {
 
     implicit val jsonWritesEmailInfo = Json.writes[EmailInfo]
     implicit val jsonReadsEmailInfo = Json.reads[EmailInfo]
+
+    implicit val jsonWritesEmailStats = Json.writes[EmailStats]
+    implicit val jsonReadsEmailStats = Json.reads[EmailStats]
 
     implicit val jsonWrites = Json.writes[EmailSendItem]
     implicit val jsonReads = Json.reads[EmailSendItem]
@@ -59,17 +142,18 @@ object StatsTable {
           fromName,
           duplicates,
           invalidAddresses,
-          existingUndeliverables,
-          existingUnsubscribes,
-          hardBounces,
-          softBounces,
-          otherBounces,
-          forwardedEmails,
-          uniqueClicks,
-          uniqueOpens,
-          numberSent,
-          numberDelivered,
-          unsubscribes,
+          EmailStats(
+            existingUndeliverables,
+            existingUnsubscribes,
+            hardBounces,
+            softBounces,
+            otherBounces,
+            forwardedEmails,
+            uniqueClicks,
+            uniqueOpens,
+            numberSent,
+            numberDelivered,
+            unsubscribes),
           EmailInfo(
             missingAddresses,
             subject,
@@ -97,19 +181,22 @@ object StatsTable {
       fromName: String,
       duplicates: Int,
       invalidAddresses: Int,
-      existingUndeliverables: Int,
-      existingUnsubscribes: Int,
-      hardBounces: Int,
-      softBounces: Int,
-      otherBounces: Int,
-      forwardedEmails: Int,
-      uniqueClicks: Int,
-      uniqueOpens: Int,
-      numberSent: Int,
-      numberDelivered: Int,
-      unsubscribes: Int,
+      emailStats: EmailStats,
       emailInfo: EmailInfo
                             )
+  case class EmailStats(
+     existingUndeliverables: Int,
+     existingUnsubscribes: Int,
+     hardBounces: Int,
+     softBounces: Int,
+     otherBounces: Int,
+     forwardedEmails: Int,
+     uniqueClicks: Int,
+     uniqueOpens: Int,
+     numberSent: Int,
+     numberDelivered: Int,
+     unsubscribes: Int
+                         )
   case class EmailInfo(
       missingAddresses: Int,
       subject: String,

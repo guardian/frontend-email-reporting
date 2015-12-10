@@ -1,11 +1,10 @@
 package controllers
 
+import models.Reports._
 import models.StatsTable
-import models.StatsTable.EmailSendItem._
-import play.api._
 import play.api.mvc._
-import play.api.libs.json._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class Application extends Controller {
 
@@ -14,9 +13,8 @@ class Application extends Controller {
   }
 
   def stats = Action.async { request =>
-    StatsTable.list().map { data =>
-      val result = JsArray(data.toList.map(item => Json.toJson(item)))
-      Ok(result)
+    StatsTable.list().map { stats =>
+      Ok(buildBasicStats(stats))
     }
   }
 }
