@@ -9,21 +9,42 @@
     function getData(){
         $.get("/stats", null, function(data){makeChart(data)});
     }
+    function parseDateTime(data){
+        return data.map(function(item){
+            return {
+                "name": item.name,
+                "data": item['data'].map(function(dates){
+                    return [Date.parse(dates['timestamp']),dates['count']]
+                })
+             }
+        });
+    }
+    function EnableFields(data){
+        return data.map(function (item) {
+            if( item.name == "uniqueClicks" ||
+                item.name ==  "uniqueOpens" ||
+                item.name ==  "numberSent" ||
+                item.name ==  "unsubscribes") {
+                item.visible = true;
+            } else {
+                item.visible = false;
+            }
+            return item
+        });
+    }
     function makeChart(data){
         $(function () {
-            $('#chart1').highcharts({
+            $('#chart1').highcharts('StockChart', {
                 chart: {
-                    type: 'area'
+                    type: 'line'
                 },
                 title: {
                     text: 'Daily email basic stats'
                 },
                 xAxis: {
-                    allowDecimals: false,
+                    type: 'datetime',
                     labels: {
-                        formatter: function () {
-                            return this.value; // clean, unformatted number for year
-                        }
+                        enabled: true
                     }
                 },
                 yAxis: {
@@ -31,12 +52,23 @@
                         text: 'Number of Subscribers'
                     }
                 },
+                rangeSelector: {
+                    enabled: false
+                },
+                scrollbar: {
+                    enabled: false
+                },
+                navigator: {
+                    enabled: false
+                },
                 tooltip: {
-                    pointFormat: '{series.name} people <b>{point.y:,.0f}</b> in {point.x}'
+                    pointFormat: '{series.name}: <b>{point.y:,.0f}</b><br/>'
+                },
+                legend: {
+                    enabled: true
                 },
                 plotOptions: {
-                    area: {
-                        pointStart: 1940,
+                    line: {
                         marker: {
                             enabled: false,
                             symbol: 'circle',
@@ -47,12 +79,19 @@
                                 }
                             }
                         }
+                    },
+                    datetime: {
+                        dataLabels: {
+                            enabled: true
+                        },
+                        enableMouseTracking: false
                     }
                 },
-                series: data
+                series: EnableFields(parseDateTime(data))
             });
         });
     }
+
 	</script>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -60,6 +99,6 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="http://code.highcharts.com/stock/highstock.js"></script>
 
 }

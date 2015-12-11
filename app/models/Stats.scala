@@ -10,25 +10,46 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-case class JsonDataPoint(name: String, data: List[Int])
+case class JsonDataPoint(name: String, data: List[DateTimePoint])
+case class DateTimePoint(timestamp: String, count: Int)
 
+object DateTimePoint {
+  implicit val JsonDateTimePointWrites = Json.writes[DateTimePoint]
+}
 object JsonDataPoint {
   implicit val JsonDataPointWrites = Json.writes[JsonDataPoint]
 }
 
 case class EmailStatsSeriesData(
-   existingUndeliverables: List[Int],
-   existingUnsubscribes: List[Int],
-   hardBounces: List[Int],
-   softBounces: List[Int],
-   otherBounces: List[Int],
-   forwardedEmails: List[Int],
-   uniqueClicks: List[Int],
-   uniqueOpens: List[Int],
-   numberSent: List[Int],
-   numberDelivered: List[Int],
-   unsubscribes: List[Int]
-   )
+   existingUndeliverables: List[DateTimePoint],
+   existingUnsubscribes: List[DateTimePoint],
+   hardBounces: List[DateTimePoint],
+   softBounces: List[DateTimePoint],
+   otherBounces: List[DateTimePoint],
+   forwardedEmails: List[DateTimePoint],
+   uniqueClicks: List[DateTimePoint],
+   uniqueOpens: List[DateTimePoint],
+   numberSent: List[DateTimePoint],
+   numberDelivered: List[DateTimePoint],
+   unsubscribes: List[DateTimePoint]
+   ) {
+
+  def ++ (b: EmailStatsSeriesData): EmailStatsSeriesData = {
+    this.copy(
+      this.existingUndeliverables ++ b.existingUndeliverables,
+      this.existingUnsubscribes ++ b.existingUnsubscribes,
+      this.hardBounces ++ b.hardBounces,
+      this.softBounces ++ b.softBounces,
+      this.otherBounces ++ b.otherBounces,
+      this.forwardedEmails ++ b.forwardedEmails,
+      this.uniqueClicks ++ b.uniqueClicks,
+      this.uniqueOpens ++ b.uniqueOpens,
+      this.numberSent ++ b.numberSent,
+      this.numberDelivered ++ b.numberDelivered,
+      this.unsubscribes ++ b.unsubscribes
+    )
+  }
+}
 
 object EmailStatsSeriesData {
 
@@ -36,7 +57,7 @@ object EmailStatsSeriesData {
 
   def fromTimeSeries(timeSeries: Seq[EmailStats]) = {
     timeSeries.tail.foldLeft(EmailStatsSeriesData.fromStats(timeSeries.head)){ (acc, item) =>
-      this.add(acc, EmailStatsSeriesData.fromStats(item))
+      acc ++ EmailStatsSeriesData.fromStats(item)
     }
   }
 
@@ -53,38 +74,25 @@ object EmailStatsSeriesData {
       JsonDataPoint("numberSent", a.numberSent),
       JsonDataPoint("numberDelivered", a.numberDelivered),
       JsonDataPoint("unsubscribes", a.unsubscribes)
-    ))
-  }
-
-  def fromStats(stats: EmailStats) = {
-    EmailStatsSeriesData(
-      List(stats.existingUndeliverables),
-      List(stats.existingUnsubscribes),
-      List(stats.hardBounces),
-      List(stats.softBounces),
-      List(stats.otherBounces),
-      List(stats.forwardedEmails),
-      List(stats.uniqueClicks),
-      List(stats.uniqueOpens),
-      List(stats.numberSent),
-      List(stats.numberDelivered),
-      List(stats.unsubscribes)
+      )
     )
   }
 
-  def add (a: EmailStatsSeriesData, b: EmailStatsSeriesData): EmailStatsSeriesData = {
-    a.copy(
-      a.existingUndeliverables ++ b.existingUndeliverables,
-      a.existingUnsubscribes ++ b.existingUnsubscribes,
-      a.hardBounces ++ b.hardBounces,
-      a.softBounces ++ b.softBounces,
-      a.otherBounces ++ b.otherBounces,
-      a.forwardedEmails ++ b.forwardedEmails,
-      a.uniqueClicks ++ b.uniqueClicks,
-      a.uniqueOpens ++ b.uniqueOpens,
-      a.numberSent ++ b.numberSent,
-      a.numberDelivered ++ b.numberDelivered,
-      a.unsubscribes ++ b.unsubscribes
+  def fromStats(stats: EmailStats) = {
+    val datetime = s"${stats.date}T${stats.time}:00.000Z"
+
+    EmailStatsSeriesData(
+      List(DateTimePoint(datetime, stats.existingUndeliverables)),
+      List(DateTimePoint(datetime, stats.existingUnsubscribes)),
+      List(DateTimePoint(datetime, stats.hardBounces)),
+      List(DateTimePoint(datetime, stats.softBounces)),
+      List(DateTimePoint(datetime, stats.otherBounces)),
+      List(DateTimePoint(datetime, stats.forwardedEmails)),
+      List(DateTimePoint(datetime, stats.uniqueClicks)),
+      List(DateTimePoint(datetime, stats.uniqueOpens)),
+      List(DateTimePoint(datetime, stats.numberSent)),
+      List(DateTimePoint(datetime, stats.numberDelivered)),
+      List(DateTimePoint(datetime, stats.unsubscribes))
     )
   }
 }
@@ -143,6 +151,8 @@ object StatsTable {
           duplicates,
           invalidAddresses,
           EmailStats(
+            date,
+            time,
             existingUndeliverables,
             existingUnsubscribes,
             hardBounces,
@@ -155,6 +165,8 @@ object StatsTable {
             numberDelivered,
             unsubscribes),
           EmailInfo(
+            date,
+            time,
             missingAddresses,
             subject,
             previewURL,
@@ -185,6 +197,8 @@ object StatsTable {
       emailInfo: EmailInfo
                             )
   case class EmailStats(
+     date: String,
+     time: String,
      existingUndeliverables: Int,
      existingUnsubscribes: Int,
      hardBounces: Int,
@@ -198,6 +212,8 @@ object StatsTable {
      unsubscribes: Int
                          )
   case class EmailInfo(
+      date: String,
+      time: String,
       missingAddresses: Int,
       subject: String,
       previewURL: String,
