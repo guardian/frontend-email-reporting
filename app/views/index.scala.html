@@ -70,21 +70,16 @@
                 plotOptions: {
                     line: {
                         marker: {
-                            enabled: false,
+                            enabled: true,
                             symbol: 'circle',
-                            radius: 2,
+                            radius: 3,
                             states: {
                                 hover: {
                                     enabled: true
                                 }
                             }
-                        }
-                    },
-                    datetime: {
-                        dataLabels: {
-                            enabled: true
                         },
-                        enableMouseTracking: false
+                        shadow: true
                     }
                 },
                 series: EnableFields(parseDateTime(data))
