@@ -1,9 +1,14 @@
 package models
 
 import awswrappers.dynamodb._
+import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap
 import models.StatsTable.{EmailSendItem, EmailStats}
+import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json.{Writes, Json}
 import com.amazonaws.services.dynamodbv2.model._
+import java.util.{HashMap => JMap}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -56,9 +61,14 @@ object EmailStatsSeriesData {
   implicit val EmailStatsSeriesWrites = Json.writes[EmailStatsSeriesData]
 
   def fromTimeSeries(timeSeries: Seq[EmailStats]) = {
-    timeSeries.tail.foldLeft(EmailStatsSeriesData.fromStats(timeSeries.head)){ (acc, item) =>
-      acc ++ EmailStatsSeriesData.fromStats(item)
+    if (timeSeries.isEmpty) {
+      EmailStatsSeriesData.empty
     }
+    else if (timeSeries.length > 1) {
+      timeSeries.tail.foldLeft(EmailStatsSeriesData.fromStats(timeSeries.head)) { (acc, item) =>
+        acc ++ EmailStatsSeriesData.fromStats(item)
+      }
+    } else { EmailStatsSeriesData.fromStats(timeSeries.head) }
   }
 
   def toJson(a: EmailStatsSeriesData) = {
@@ -79,22 +89,33 @@ object EmailStatsSeriesData {
   }
 
   def fromStats(stats: EmailStats) = {
-    val datetime = s"${stats.date}T${stats.time}:00.000Z"
-
     EmailStatsSeriesData(
-      List(DateTimePoint(datetime, stats.existingUndeliverables)),
-      List(DateTimePoint(datetime, stats.existingUnsubscribes)),
-      List(DateTimePoint(datetime, stats.hardBounces)),
-      List(DateTimePoint(datetime, stats.softBounces)),
-      List(DateTimePoint(datetime, stats.otherBounces)),
-      List(DateTimePoint(datetime, stats.forwardedEmails)),
-      List(DateTimePoint(datetime, stats.uniqueClicks)),
-      List(DateTimePoint(datetime, stats.uniqueOpens)),
-      List(DateTimePoint(datetime, stats.numberSent)),
-      List(DateTimePoint(datetime, stats.numberDelivered)),
-      List(DateTimePoint(datetime, stats.unsubscribes))
+      List(DateTimePoint(stats.dateTime, stats.existingUndeliverables)),
+      List(DateTimePoint(stats.dateTime, stats.existingUnsubscribes)),
+      List(DateTimePoint(stats.dateTime, stats.hardBounces)),
+      List(DateTimePoint(stats.dateTime, stats.softBounces)),
+      List(DateTimePoint(stats.dateTime, stats.otherBounces)),
+      List(DateTimePoint(stats.dateTime, stats.forwardedEmails)),
+      List(DateTimePoint(stats.dateTime, stats.uniqueClicks)),
+      List(DateTimePoint(stats.dateTime, stats.uniqueOpens)),
+      List(DateTimePoint(stats.dateTime, stats.numberSent)),
+      List(DateTimePoint(stats.dateTime, stats.numberDelivered)),
+      List(DateTimePoint(stats.dateTime, stats.unsubscribes))
     )
   }
+
+  def empty = EmailStatsSeriesData(
+    List.empty[DateTimePoint],
+    List.empty[DateTimePoint],
+    List.empty[DateTimePoint],
+    List.empty[DateTimePoint],
+    List.empty[DateTimePoint],
+    List.empty[DateTimePoint],
+    List.empty[DateTimePoint],
+    List.empty[DateTimePoint],
+    List.empty[DateTimePoint],
+    List.empty[DateTimePoint],
+    List.empty[DateTimePoint])
 }
 object StatsTable {
 
@@ -111,8 +132,8 @@ object StatsTable {
 
     def fromAttributeValueMap(xs: Map[String, AttributeValue]) = {
       for {
-        date <- xs.getString("date")
-        time <- xs.getString("time")
+        listId <- xs.getString("listId")
+        dateTime <- xs.getString("dateTime")
         sendDate <- xs.getString("SendDate")
         fromAddress <- xs.getString("FromAddress")
         fromName <- xs.getString("FromName")
@@ -143,16 +164,15 @@ object StatsTable {
         additional <- xs.getString("Additional")
       } yield {
         EmailSendItem(
-          date,
-          time,
+          listId,
+          dateTime,
           sendDate,
           fromAddress,
           fromName,
           duplicates,
           invalidAddresses,
           EmailStats(
-            date,
-            time,
+            dateTime,
             existingUndeliverables,
             existingUnsubscribes,
             hardBounces,
@@ -165,8 +185,7 @@ object StatsTable {
             numberDelivered,
             unsubscribes),
           EmailInfo(
-            date,
-            time,
+            dateTime,
             missingAddresses,
             subject,
             previewURL,
@@ -186,8 +205,8 @@ object StatsTable {
   }
 
   case class EmailSendItem(
-      date: String,
-      time: String,
+      listID: String,
+      dateTime: String,
       sendDate: String,
       fromAddress: String,
       fromName: String,
@@ -197,8 +216,7 @@ object StatsTable {
       emailInfo: EmailInfo
                             )
   case class EmailStats(
-     date: String,
-     time: String,
+     dateTime: String,
      existingUndeliverables: Int,
      existingUnsubscribes: Int,
      hardBounces: Int,
@@ -212,8 +230,7 @@ object StatsTable {
      unsubscribes: Int
                          )
   case class EmailInfo(
-      date: String,
-      time: String,
+      dateTime: String,
       missingAddresses: Int,
       subject: String,
       previewURL: String,
@@ -229,6 +246,12 @@ object StatsTable {
       )
 
   val TableName = "email-send-report-TEST"
+
+  def makeItemId(listId: Int, date: Option[DateTime] = None): String = {
+    val dateToday = date.getOrElse(new DateTime())
+    val fmt = ISODateTimeFormat.date()
+    s"${listId}#${fmt.print(dateToday)}"
+  }
 
   def list() = {
 
@@ -253,7 +276,42 @@ object StatsTable {
         }
       }
     }
-    iter(None).map(_.sortBy(x => x.time))
+
+    iter(None).map(_.sortBy(x => x.dateTime))
+  }
+
+  def query(id: Int, startDate: DateTime, endDate: DateTime) = {
+
+    def iter(lastEvaluatedKey: Option[java.util.Map[String, AttributeValue]]): Future[Seq[StatsTable.EmailSendItem]] = {
+      val queryRequest = new QueryRequest()
+        .withTableName(TableName)
+        .withKeyConditionExpression("listId = :v_id AND #dateTime BETWEEN :v_startdate AND :v_enddate")
+        .withExpressionAttributeValues(Map(
+          ":v_id" -> new AttributeValue(id.toString),
+          ":v_startdate" -> new AttributeValue(startDate.toDateTimeISO.toString),
+          ":v_enddate" -> new AttributeValue(endDate.toDateTimeISO.toString)
+        ).asJava)
+        .withExpressionAttributeNames(Map("#dateTime" -> "dateTime").asJava)
+
+      dynamoDbClient.queryFuture(queryRequest) flatMap { result =>
+        val theseItems = result.getItems.asScala.toSeq.flatMap { item =>
+          EmailSendItem.fromAttributeValueMap(item.asScala.toMap)
+        }
+        Option(result.getLastEvaluatedKey) match {
+          case Some(nextKey) =>
+            iter(Some(nextKey)) map { otherItems =>
+              theseItems ++ otherItems
+            }
+
+          case None =>
+            Future.successful(theseItems)
+        }
+      }
+    }
+    val query = Map("listId" -> new AttributeValue(makeItemId(id))).asJava
+
+    iter(Some(query)).map(_.sortBy(x => x.dateTime))
+
   }
 }
 
