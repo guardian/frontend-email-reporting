@@ -1,0 +1,114 @@
+@(message: String, lists: Map[String, Int], from: String, to: String )
+
+@main("The Guardian Daily Email") {
+
+    @lists.map{ case (listName, id) =>
+
+        <div id="chart@id"></div>
+        <script type="text/javascript">
+            getData();
+            function getData(){
+                $.get("/stats/@id?fromDate=@from&toDate=@to", null, function(data){
+                    makeChart(data, @id, "@listName")
+                 });
+            }
+
+        </script>
+    }
+    <script type="text/javascript">
+        function parseDateTime(data){
+            return data.map(function(item){
+                return {
+                    "name": item.name,
+                    "data": item['data'].map(function(dates){
+                        return [Date.parse(dates['timestamp']),dates['count']]
+                    })
+                 }
+            });
+        }
+        function EnableFields(data){
+            return data.map(function (item) {
+                if( item.name == "uniqueClicks" ||
+                    item.name ==  "uniqueOpens" ||
+                    item.name ==  "numberSent" ||
+                    item.name ==  "unsubscribes") {
+                    item.visible = true;
+                } else {
+                    item.visible = false;
+                }
+                return item
+            });
+        }
+        function makeChart(data, id, title){
+            $(function () {
+                $('#chart' + id).highcharts('StockChart', {
+                    chart: {
+                        type: 'line'
+                    },
+                    title: {
+                        text: title
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        labels: {
+                            enabled: true
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Number of Subscribers'
+                        }
+                    },
+                    rangeSelector: {
+                        enabled: false
+                    },
+                    scrollbar: {
+                        enabled: false
+                    },
+                    navigator: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        pointFormat: '{series.name}: <b>{point.y:,.0f}</b><br/>'
+                    },
+                    legend: {
+                        enabled: true
+                    },
+                    tooltip: {
+                        compare: true,
+                        followPointer: true,
+                        positioner: function (labelWidth, labelHeight, point) {
+                            return {x: 20, y: 0};
+                        },
+                        hideDelay: 10000
+                    },
+                    plotOptions: {
+                        line: {
+                            marker: {
+                                enabled: true,
+                                symbol: 'circle',
+                                radius: 3,
+                                states: {
+                                    hover: {
+                                        enabled: true
+                                    }
+                                }
+                            },
+                            shadow: true
+                        }
+                    },
+                    series: EnableFields(parseDateTime(data))
+                });
+            });
+        }
+
+    </script>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <script src="http://code.highcharts.com/stock/highstock.js"></script>
+
+}
