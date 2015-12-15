@@ -7,9 +7,10 @@ import play.api.libs.json._
 object Reports {
 
   val lists = Map[String, Int](
-    "guardianTodayUk" -> 37,
-    "guardianTodayUs" -> 1493,
-    "guardianTodayAu" -> 1506
+    "guardianTodayUk_all" -> 111,
+    "guardianTodayUk_new" -> 16216,
+    "guardianTodayUs" -> 16125,
+    "guardianTodayAu" -> 2014
   )
 
   def buildBasicStats(data: Seq[EmailSendItem]): JsValue = {

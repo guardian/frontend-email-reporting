@@ -1,1 +1,2 @@
-aws dynamodb batch-write-item --request-items file://email-send-fixture.json --profile frontend --region eu-west-1
+#!/usr/bin/env bash
+aws dynamodb batch-write-item --request-items file://$1 --profile frontend --region eu-west-1

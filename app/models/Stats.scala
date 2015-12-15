@@ -131,7 +131,7 @@ object StatsTable {
     implicit val jsonReads = Json.reads[EmailSendItem]
 
     def fromAttributeValueMap(xs: Map[String, AttributeValue]) = {
-      for {
+      val data = for {
         listId <- xs.getString("listId")
         dateTime <- xs.getString("dateTime")
         sendDate <- xs.getString("SendDate")
@@ -156,8 +156,8 @@ object StatsTable {
         sentDate <- xs.getString("SentDate")
         emailName <- xs.getString("EmailName")
         status <- xs.getString("Status")
-        isMultipart <- xs.getBoolean("IsMultipart")
-        isAlwaysOn <- xs.getBoolean("IsAlwaysOn")
+        isMultipart <- xs.getInt("IsMultipart").map(_ == 1)
+        isAlwaysOn <- xs.getInt("IsAlwaysOn").map(_ == 1)
         numberTargeted <- xs.getInt("NumberTargeted")
         numberErrored <- xs.getInt("NumberErrored")
         numberExcluded <- xs.getInt("NumberExcluded")
@@ -201,6 +201,8 @@ object StatsTable {
           )
         )
       }
+      println(data)
+      data
     }
   }
 
@@ -254,7 +256,9 @@ object StatsTable {
   }
 
   def query(id: Int, startDate: DateTime, endDate: DateTime): Future[Seq[EmailSendItem]]  = {
-
+    println(startDate.toDateTimeISO.toString)
+    println("==----===")
+    println(endDate.toDateTimeISO.toString)
     def iter(lastEvaluatedKey: Option[java.util.Map[String, AttributeValue]]): Future[Seq[StatsTable.EmailSendItem]] = {
       val queryRequest = new QueryRequest()
         .withTableName(TableName)
