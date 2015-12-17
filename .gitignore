@@ -18,3 +18,9 @@ project/plugins/project/
 .worksheet
 
 *.pyc
+bin/
+build/
+include/
+local/
+lib/
+dist/
