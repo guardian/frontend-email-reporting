@@ -40,5 +40,3 @@ def testCredentials(event, context):
         print str(send)
         logger.info(str(send))
 
-if __name__ == '__main__':
-    testCredentials(None, None)
