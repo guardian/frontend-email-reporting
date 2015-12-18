@@ -14,7 +14,7 @@ class Application extends Controller {
     val from = times.from.getMillis.toString
     val to = times.to.getMillis.toString
 
-    Ok(views.html.index("The Guardian Daily Email", Reports.lists, from, to))
+    Ok(views.html.index("The Guardian Daily Email", Reports.emailLists, from, to))
   }
 
   def stats(id: Int, times: TimeFilter) = Action.async { request =>

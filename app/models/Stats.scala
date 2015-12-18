@@ -256,9 +256,6 @@ object StatsTable {
   }
 
   def query(id: Int, startDate: DateTime, endDate: DateTime): Future[Seq[EmailSendItem]]  = {
-    println(startDate.toDateTimeISO.toString)
-    println("==----===")
-    println(endDate.toDateTimeISO.toString)
     def iter(lastEvaluatedKey: Option[java.util.Map[String, AttributeValue]]): Future[Seq[StatsTable.EmailSendItem]] = {
       val queryRequest = new QueryRequest()
         .withTableName(TableName)
