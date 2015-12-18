@@ -24,3 +24,4 @@ include/
 local/
 lib/
 dist/
+collector/src
