@@ -16,3 +16,9 @@ project/plugins/project/
 # Scala-IDE specific
 .scala_dependencies
 .worksheet
+
+*assets/javascripts/lib/
+*assets/stylesheets/lib/
+
+node_modules
+public

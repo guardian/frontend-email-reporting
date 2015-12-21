@@ -1,0 +1,42 @@
+@()
+
+<style>
+    #datepicker {
+        padding: 0.5rem 1rem;
+        width:250px;
+        font-size: 1.5rem;
+        color: #999999;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+    label {
+        color: #FFF;
+        font-size: 1.2rem;
+        cursor: pointer;
+        margin-left: 1rem;
+    }
+    .prev-period {
+        display: block;
+        font-style: italic;
+        color: #AAEAEF;
+        font-size: 1.1rem;
+    }
+    .info {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .datepicker__wrapper {
+        width:400px;
+        top: 7px;
+        position: relative;
+    }
+    .daterangepicker .calendar {
+        max-width: 220px;
+    }
+</style>
+<div class="datepicker__wrapper">
+    <label>Date :</label>
+    <input id="datepicker" name="daterange" placeholder="Please select a date range..." value="" />
+    <div class="info"></div>
+</div>
+
