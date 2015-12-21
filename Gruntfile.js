@@ -31,18 +31,12 @@ module.exports = function (grunt) {
             publicDir: {
                 root: 'public',
                 stylesheets: '<%= dirs.publicDir.root %>/stylesheets',
-                // bookmarklets are js files but we give them their own directory
-                // to exclude them from asset hashing
-                bookmarklets: '<%= dirs.publicDir.root %>/bookmarklets',
                 javascripts: '<%= dirs.publicDir.root %>/javascripts',
-                images: '<%= dirs.publicDir.root %>/images'
             },
             assets: {
                 root: 'assets',
                 stylesheets: '<%= dirs.assets.root %>/stylesheets',
-                bookmarklets: '<%= dirs.assets.root %>/bookmarklets',
                 javascripts: '<%= dirs.assets.root %>/javascripts',
-                images: '<%= dirs.assets.root %>/images'
             }
         },
 
@@ -71,33 +65,6 @@ module.exports = function (grunt) {
                     ext: '.css'
                 }]
             }
-        },
-
-        px_to_rem: {
-            dist: {
-                options: {
-                    map: isDev,
-                    base: 16,
-                    fallback: false,
-                    max_decimals: 5
-                },
-                files: [{
-                    expand: true,
-                    cwd: '<%= dirs.publicDir.stylesheets %>',
-                    src: ['*.css'],
-                    dest: '<%= dirs.publicDir.stylesheets %>'
-                }]
-            }
-        },
-
-        postcss: {
-            options: {
-                map: isDev ? true : false,
-                processors: [
-                    require('autoprefixer-core')({browsers: ['> 5%', 'last 2 versions', 'IE 9', 'Safari 6']})
-                ]
-            },
-            dist: { src: '<%= dirs.publicDir.stylesheets %>/*.css' }
         },
 
         requirejs: {
@@ -152,57 +119,14 @@ module.exports = function (grunt) {
             polyfills: {
                 src: '<%= dirs.assets.javascripts %>/lib/polyfills.min.js',
                 dest: '<%= dirs.publicDir.javascripts %>/lib/polyfills.min.js'
-            },
-            curl: {
-                src: '<%= dirs.assets.javascripts %>/lib/bower-components/curl/dist/curl-with-js-and-domReady/curl.js',
-                dest: '<%= dirs.publicDir.javascripts %>/lib/curl/',
-                expand: true,
-                flatten: true
-            },
-            zxcvbn: {
-                src: '<%= dirs.assets.javascripts %>/lib/bower-components/zxcvbn/dist/zxcvbn.js',
-                dest: '<%= dirs.publicDir.javascripts %>/lib/zxcvbn/',
-                expand: true,
-                flatten: true
-            },
-            omniture: {
-                src: '<%= dirs.assets.javascripts %>/lib/analytics/omniture.js',
-                dest: '<%= dirs.publicDir.javascripts %>/lib/omniture/',
-                expand: true,
-                flatten: true
-            },
-            uet: {
-                src: '<%= dirs.assets.javascripts %>/lib/analytics/uet.js',
-                dest: '<%= dirs.publicDir.javascripts %>/lib/uet/',
-                expand: true,
-                flatten: true
-            },
-            // For developer use. These are js files, not served with any page
-            // but included dynamically when clicking on the respective bookmarklet.
-            bookmarklets: {
-                cwd: '<%= dirs.assets.bookmarklets %>',
-                src: ['*.js'],
-                dest: '<%= dirs.publicDir.bookmarklets %>',
-                expand: true
-            },
-            images: {
-                cwd: '<%= dirs.assets.images %>',
-                src: [
-                    '**',
-                    '!**/inline-svgs/raw/**'
-                ],
-                dest: '<%= dirs.publicDir.images %>',
-                expand: true
             }
         },
 
         clean: {
-            bookmarklets: ['<%= dirs.publicDir.bookmarklets %>'],
+
             js: ['<%= dirs.publicDir.javascripts %>'],
             css: ['<%= dirs.publicDir.stylesheets %>'],
-            icons: ['<%= dirs.assets.images %>/inline-svgs/*.svg'],
             assetMap: 'conf/assets.map',
-            images: ['<%= dirs.publicDir.images %>'],
             dist: ['<%= dirs.publicDir.root %>/dist/']
         },
 
@@ -248,17 +172,6 @@ module.exports = function (grunt) {
             }
         },
 
-        imagemin: {
-            dynamic: {
-                files: [{
-                    expand: true,
-                    cwd: '<%= dirs.publicDir.images %>',
-                    src: ['**/*.{png,jpg}', '!**/svgs/**'],
-                    dest: '<%= dirs.publicDir.images %>'
-                }]
-            }
-        },
-
         /***********************************************************************
          * Test & Validate
          ***********************************************************************/
@@ -291,48 +204,7 @@ module.exports = function (grunt) {
                     ]
                 }]
             }
-        },
-
-        /***********************************************************************
-         * Icons
-         ***********************************************************************/
-
-        svgmin: {
-            options: {
-                plugins: [
-                    { removeViewBox: false },
-                    { removeUselessStrokeAndFill: false },
-                    { removeEmptyAttrs: false },
-                    { cleanUpIds: false }
-                ]
-            },
-            dist: {
-                expand: true,
-                cwd: '<%= dirs.assets.images %>/inline-svgs/raw',
-                src: ['*.svg'],
-                dest: '<%= dirs.assets.images %>/inline-svgs'
-            }
-        },
-
-        svgstore: {
-            options: {
-                prefix: 'icon-',
-                symbol: true,
-                inheritviewbox: true,
-                cleanup: ['fill'],
-                svg: {
-                    id: 'svg-sprite',
-                    width: 0,
-                    height: 0
-                }
-            },
-            icons: {
-                files: {
-                    '<%= dirs.assets.images %>/svg-sprite.svg': ['<%= dirs.assets.images %>/inline-svgs/*.svg']
-                }
-            }
         }
-
     });
 
 
@@ -342,18 +214,11 @@ module.exports = function (grunt) {
 
     grunt.registerTask('validate', ['eslint']);
 
-    grunt.registerTask('build:images', ['svgSprite', 'copy:images', 'imagemin']);
-    grunt.registerTask('build:css', ['sass', 'px_to_rem', 'postcss']);
+    grunt.registerTask('build:css', ['sass']);
 
     grunt.registerTask('compile:css', [
         'clean:css',
-        'clean:images',
-        'build:images',
         'build:css'
-    ]);
-    grunt.registerTask('compile:bookmarklets', [
-        'clean:bookmarklets',
-        'copy:bookmarklets'
     ]);
     grunt.registerTask('compile:js', function() {
         if (!isDev) {
@@ -361,12 +226,7 @@ module.exports = function (grunt) {
         }
         grunt.task.run([
             'clean:js',
-            'requirejs:compile',
-            'copy:polyfills',
-            'copy:curl',
-            'copy:zxcvbn',
-            'copy:omniture',
-            'copy:uet'
+            'requirejs:compile'
         ]);
     });
     grunt.registerTask('compile', function(){
@@ -374,7 +234,6 @@ module.exports = function (grunt) {
             'clean:public',
             'compile:css',
             'compile:js',
-            'compile:bookmarklets'
         ]);
         /**
          * Only version files for prod builds
@@ -382,7 +241,6 @@ module.exports = function (grunt) {
          */
         if (!isDev) {
             grunt.task.run([
-                'asset_hash',
                 'clean:public:prod'
             ]);
         }
@@ -411,10 +269,8 @@ module.exports = function (grunt) {
      ***********************************************************************/
 
     grunt.registerTask('clean:public', [
-        'clean:bookmarklets',
         'clean:js',
         'clean:css',
-        'clean:images',
         'clean:assetMap',
         'clean:dist'
     ]);
@@ -423,6 +279,5 @@ module.exports = function (grunt) {
     grunt.registerTask('clean:public:prod', [
         'clean:js',
         'clean:css',
-        'clean:images'
     ]);
 };
