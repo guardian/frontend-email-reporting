@@ -2,11 +2,7 @@ name := """frontend-email-reporting-repo"""
 
 version := "1.0-SNAPSHOT"
 
-<<<<<<< Updated upstream
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
-=======
 lazy val root = (project in file(".")).enablePlugins(PlayScala, RiffRaffArtifact, UniversalPlugin)
->>>>>>> Stashed changes
 
 scalaVersion := "2.11.6"
 
