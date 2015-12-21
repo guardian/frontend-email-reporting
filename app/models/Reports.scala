@@ -14,7 +14,7 @@ object Reports {
   )
 
   def buildBasicStats(data: Seq[EmailSendItem]): JsValue = {
-    EmailStatsSeriesData.toJson(mergeStats(data))
+    EmailStatsSeriesData.toJson(mergeStats(data).groupByDay)
   }
 
   def mergeStats(data: Seq[EmailSendItem]): EmailStatsSeriesData = {
