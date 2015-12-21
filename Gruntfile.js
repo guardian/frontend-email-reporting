@@ -74,21 +74,9 @@ module.exports = function (grunt) {
                     baseUrl: '<%= dirs.assets.javascripts %>',
                     // Keep these in sync with the paths found in the karma test-main.js paths
                     paths: {
-                        '$': 'src/utils/$',
                         'jquery': 'lib/bower-components/jquery/dist/jquery',
-                        'lodash': 'lib/bower-components/lodash-amd/modern',
-                        'bean': 'lib/bower-components/bean/bean',
-                        'bonzo': 'lib/bower-components/bonzo/bonzo',
-                        'qwery': 'lib/bower-components/qwery/qwery',
-                        'reqwest': 'lib/bower-components/reqwest/reqwest',
-                        'respimage': 'lib/bower-components/respimage/respimage',
-                        'lazySizes': 'lib/bower-components/lazysizes/lazysizes',
-                        'raven': 'lib/bower-components/raven-js/dist/raven',
-                        'gumshoe': 'lib/bower-components/gumshoe/dist/js/gumshoe',
-                        'smoothScroll': 'lib/bower-components/smooth-scroll/dist/js/smooth-scroll',
                         'bootstrap-daterangepicker': 'lib/bower-components/bootstrap-daterangepicker/daterangepicker',
                         'moment': 'lib/bower-components/moment/moment',
-                        'ajax': 'src/utils/ajax',
                         'datePicker': 'src/modules/datePicker',
                         'query-object': 'lib/bower-components/query-object/query-object'
                     },
@@ -258,11 +246,6 @@ module.exports = function (grunt) {
         grunt.task.run(['karma:unit']);
     });
 
-    /***********************************************************************
-     * Icons
-     ***********************************************************************/
-
-    grunt.registerTask('svgSprite', ['clean:icons', 'svgmin', 'svgstore']);
 
     /***********************************************************************
      * Clean
@@ -278,6 +261,6 @@ module.exports = function (grunt) {
     // the pre-hashed assets after hashing, and bookmarklets aren't hashed.
     grunt.registerTask('clean:public:prod', [
         'clean:js',
-        'clean:css',
+        'clean:css'
     ]);
 };
