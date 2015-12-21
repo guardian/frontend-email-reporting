@@ -56,9 +56,6 @@ module.exports = function (grunt) {
                     cwd: '<%= dirs.assets.stylesheets %>',
                     src: [
                         'style.scss',
-                        'ie9.style.scss',
-                        'tools.style.scss',
-                        'event-card.scss',
                         'daterangepicker.css',
                     ],
                     dest: '<%= dirs.publicDir.stylesheets %>',
