@@ -56,7 +56,7 @@ module.exports = function (grunt) {
                     cwd: '<%= dirs.assets.stylesheets %>',
                     src: [
                         'style.scss',
-                        'daterangepicker.css',
+                        'daterangepicker.css'
                     ],
                     dest: '<%= dirs.publicDir.stylesheets %>',
                     ext: '.css'
@@ -218,7 +218,7 @@ module.exports = function (grunt) {
         grunt.task.run([
             'clean:public',
             'compile:css',
-            'compile:js',
+            'compile:js'
         ]);
         /**
          * Only version files for prod builds
@@ -239,7 +239,7 @@ module.exports = function (grunt) {
         grunt.task.run(['test:unit']);
     });
     grunt.registerTask('test:unit', function() {
-        grunt.config.set('karma.options.singleRun', (singleRun === false) ? false : true);
+        grunt.config.set('karma.options.singleRun', singleRun == false)
         grunt.task.run(['karma:unit']);
     });
 
