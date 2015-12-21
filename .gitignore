@@ -17,13 +17,8 @@ project/plugins/project/
 .scala_dependencies
 .worksheet
 
-bower_components
-*/public/javascripts
-*/public/stylesheets
-*/assets/javascripts/lib/bower-components/
 *assets/javascripts/lib/
 *assets/stylesheets/lib/
 
-*lib/bower-components/
 node_modules
 public
