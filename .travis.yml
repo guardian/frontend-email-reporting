@@ -1,5 +1,11 @@
 language: scala
 sudo: false
+before_install:
+- nvm install 0.12
+- npm install -g grunt-cli
+- node -v
+- npm -v
+- npm install
 jdk:
 - oraclejdk8
 script:
