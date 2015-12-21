@@ -160,7 +160,7 @@ object StatsTable {
     implicit val jsonReads = Json.reads[EmailSendItem]
 
     def fromAttributeValueMap(xs: Map[String, AttributeValue]) = {
-      val data = for {
+      for {
         listId <- xs.getString("listId")
         dateTime <- xs.getString("dateTime")
         sendDate <- xs.getString("SendDate")
@@ -192,46 +192,44 @@ object StatsTable {
         numberExcluded <- xs.getInt("NumberExcluded")
         additional <- xs.getString("Additional")
       } yield {
-        EmailSendItem(
-          listId,
-          dateTime,
-          sendDate,
-          fromAddress,
-          fromName,
-          duplicates,
-          invalidAddresses,
-          EmailStats(
+          EmailSendItem(
+            listId,
             dateTime,
-            existingUndeliverables,
-            existingUnsubscribes,
-            hardBounces,
-            softBounces,
-            otherBounces,
-            forwardedEmails,
-            uniqueClicks,
-            uniqueOpens,
-            numberSent,
-            numberDelivered,
-            unsubscribes),
-          EmailInfo(
-            dateTime,
-            missingAddresses,
-            subject,
-            previewURL,
-            sentDate,
-            emailName,
-            status,
-            isMultipart,
-            isAlwaysOn,
-            numberTargeted,
-            numberErrored,
-            numberExcluded,
-            additional
+            sendDate,
+            fromAddress,
+            fromName,
+            duplicates,
+            invalidAddresses,
+            EmailStats(
+              dateTime,
+              existingUndeliverables,
+              existingUnsubscribes,
+              hardBounces,
+              softBounces,
+              otherBounces,
+              forwardedEmails,
+              uniqueClicks,
+              uniqueOpens,
+              numberSent,
+              numberDelivered,
+              unsubscribes),
+            EmailInfo(
+              dateTime,
+              missingAddresses,
+              subject,
+              previewURL,
+              sentDate,
+              emailName,
+              status,
+              isMultipart,
+              isAlwaysOn,
+              numberTargeted,
+              numberErrored,
+              numberExcluded,
+              additional
+            )
           )
-        )
       }
-      println(data)
-      data
     }
   }
 

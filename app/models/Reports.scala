@@ -6,7 +6,7 @@ import play.api.libs.json._
 
 object Reports {
 
-  val emailLists = Map[String, Int](
+  val emailSendDefinition = Map[String, Int](
     "guardianTodayUk_all" -> 111,
     "guardianTodayUk_new" -> 16216,
     "guardianTodayUs" -> 16125,
