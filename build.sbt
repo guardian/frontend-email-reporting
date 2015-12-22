@@ -1,4 +1,4 @@
-name := """frontend-email-reporting"""
+name := """email-reporting"""
 
 version := "1.0"
 
@@ -20,6 +20,10 @@ routesImport += "lib.TimeFilter"
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
+
+packageName in Universal := normalizedName.value
+
+topLevelDirectory in Universal := Some(normalizedName.value)
 
 riffRaffPackageType := (packageZipTarball in Universal).value
 

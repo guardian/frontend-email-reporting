@@ -77,8 +77,8 @@ Resources:
       - {Ref: ELB}
       Tags:
       - {Key: Stage, Value: PROD, PropagateAtLaunch: true}
-      - {Key: Stack, Value: frontend-email-reporting, PropagateAtLaunch: true}
-      - {Key: App, Value: frontend-email-reporting, PropagateAtLaunch: true}
+      - {Key: Stack, Value: frontend, PropagateAtLaunch: true}
+      - {Key: App, Value: email-reporting, PropagateAtLaunch: true}
       - {Key: Management, Value: port=9000, PropagateAtLaunch: true}
 
   LaunchConfig:
@@ -94,11 +94,11 @@ Resources:
       UserData:
         Fn::Base64: |
           #!/bin/bash -ev
-          adduser --system --home /reporting reporting
-          echo PRODVPC > /etc/stage
-          aws --region eu-west-1 s3 cp s3://frontend-email-reporting-dist/frontend-email-reporting/PROD/frontend-email-reporting/frontend-email-reporting.conf /etc/init
-          aws --region eu-west-1 s3 cp s3://frontend-email-reporting-dist/frontend-email-reporting/PROD/frontend-email-reporting/frontend-email-reporting.zip /frontend-email-reporting
-          unzip -d /frontend-email-reporting /frontend-email-reporting/frontend-email-reporting.zip
+          adduser --system --home /frontend-email-reporting reporting
+          echo PROD > /etc/stage
+          aws --region eu-west-1 s3 cp s3://frontend-email-reporting-dist/frontend/PROD/email-reporting/email-reporting.conf /etc/init
+          aws --region eu-west-1 s3 cp s3://frontend-email-reporting-dist/frontend/PROD/email-reporting/email-reporting.tgz /frontend-email-reporting
+          tar -xzC /frontend-email-reporting -f /frontend-email-reporting/email-reporting.tgz
           chown -R reporting /frontend-email-reporting
           start /frontend-email-reporting
   InstanceSecurityGroup:

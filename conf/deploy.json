@@ -1,7 +1,7 @@
 {
-  "defaultStacks":[ "frontend-email-reporting" ],
+  "defaultStacks":[ "frontend" ],
   "packages":{
-    "frontend-email-reporting":{
+    "email-reporting":{
       "type":"autoscaling",
       "data": {
         "secondsToWait": 900,
@@ -14,13 +14,13 @@
   },
   "recipes":{
     "default":{
-      "actionsBeforeApp": ["frontend-email-reporting.uploadArtifacts", "frontend-email-reporting.deploy"]
+      "actionsBeforeApp": ["email-reporting.uploadArtifacts", "email-reporting.deploy"]
     },
     "deployOnly": {
-      "actionsBeforeApp": ["frontend-email-reporting.deploy"]
+      "actionsBeforeApp": ["email-reporting.deploy"]
     },
     "artifactUploadOnly": {
-      "actionsBeforeApp": ["frontend-email-reporting.uploadArtifacts"]
+      "actionsBeforeApp": ["email-reporting.uploadArtifacts"]
     }
   }
 }
