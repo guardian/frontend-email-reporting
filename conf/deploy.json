@@ -1,0 +1,19 @@
+{
+  "defaultStacks":[ "frontend-email-reporting" ],
+  "packages":{
+    "status-app":{
+      "type":"autoscaling"
+    }
+  },
+  "recipes":{
+    "default":{
+      "actionsBeforeApp": ["frontend-email-reporting.uploadArtifacts", "status-app.deploy"]
+    },
+    "deployOnly": {
+      "actionsBeforeApp": ["frontend-email-reporting.deploy"]
+    },
+    "artifactUploadOnly": {
+      "actionsBeforeApp": ["frontend-email-reporting.uploadArtifacts"]
+    }
+  }
+}
