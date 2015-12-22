@@ -32,3 +32,8 @@ npm run watch
 
 *Note:* We use `grunt` and `bower` behind the scenes but provide [facades for common tasks](https://bocoup.com/weblog/a-facade-for-tooling-with-npm-scripts/) to make setup easier and reduce the number of tools needed for most developers. If you want to work with the full set of build tools install `grunt-cli` and run `grunt --help` to see the list of available tasks.
 
+To generate cloudformation run:
+```
+npm run cloudformation --loglevel silent  > cloudformation.json
+```
+Then upload via the AWS console
