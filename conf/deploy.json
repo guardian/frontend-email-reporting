@@ -7,7 +7,7 @@
   },
   "recipes":{
     "default":{
-      "actionsBeforeApp": ["frontend-email-reporting.uploadArtifacts", "status-app.deploy"]
+      "actionsBeforeApp": ["frontend-email-reporting.uploadArtifacts", "frontend-email-reporting.deploy"]
     },
     "deployOnly": {
       "actionsBeforeApp": ["frontend-email-reporting.deploy"]
