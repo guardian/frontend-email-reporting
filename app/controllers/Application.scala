@@ -22,4 +22,8 @@ class Application extends Controller {
       Ok(buildBasicStats(stats))
     }
   }
+
+  def healthcheck = Action { request =>
+    Ok("OK")
+  }
 }

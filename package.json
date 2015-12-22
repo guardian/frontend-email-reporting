@@ -12,7 +12,8 @@
     "compileJs": "grunt compile:js --dev",
     "watch": "grunt watch --dev",
     "test": "grunt validate && grunt karma",
-    "postinstall": "npm run bowerSetup"
+    "postinstall": "npm run bowerSetup",
+    "cloudformation": "yaml2json cloudformation/cloudformation.template.yaml"
   },
   "devDependencies": {
     "bower": "^1.5.3",
@@ -37,6 +38,8 @@
     "phantomjs": "~1.9.17",
     "requirejs": "^2.1.18",
     "rimraf": "^2.4.3",
-    "time-grunt": "^1.2.1"
+    "time-grunt": "^1.2.1",
+    "yaml-to-json": "^0.3.0"
   }
 }
+        

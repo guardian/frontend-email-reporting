@@ -1,6 +1,6 @@
-name := """frontend-email-reporting-repo"""
+name := """email-reporting"""
 
-version := "1.0-SNAPSHOT"
+version := "1.0"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, RiffRaffArtifact, UniversalPlugin)
 
@@ -20,6 +20,10 @@ routesImport += "lib.TimeFilter"
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
+
+packageName in Universal := normalizedName.value
+
+topLevelDirectory in Universal := Some(normalizedName.value)
 
 riffRaffPackageType := (packageZipTarball in Universal).value
 
