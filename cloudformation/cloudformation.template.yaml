@@ -7,13 +7,16 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
   Subnets:
     Description: Subnet to run the load balancer within
-    Type: List<AWS::EC2::Subnet::Id>
+    Type: CommaDelimitedList
+    Default: "subnet-7196d528, subnet-5ff8fb3a, subnet-d20328a5"
   VPC:
     Description: VPC to run instances within
     Type: AWS::EC2::VPC::Id
+    Default: "vpc-9c366ef9"
   ImageId:
     Description: AMI id
     Type: AWS::EC2::Image::Id
+    Default: "ami-748e2903"
 
 Resources:
   Role:
