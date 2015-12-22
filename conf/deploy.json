@@ -1,7 +1,7 @@
 {
   "defaultStacks":[ "frontend-email-reporting" ],
   "packages":{
-    "status-app":{
+    "frontend-email-reporting":{
       "type":"autoscaling"
     }
   },

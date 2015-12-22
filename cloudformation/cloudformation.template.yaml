@@ -77,8 +77,8 @@ Resources:
       - {Ref: ELB}
       Tags:
       - {Key: Stage, Value: PROD, PropagateAtLaunch: true}
-      - {Key: Stack, Value: frontend-email-reporting-repo, PropagateAtLaunch: true}
-      - {Key: App, Value: frontend-email-reporting-repo, PropagateAtLaunch: true}
+      - {Key: Stack, Value: frontend-email-reporting, PropagateAtLaunch: true}
+      - {Key: App, Value: frontend-email-reporting, PropagateAtLaunch: true}
       - {Key: Management, Value: port=9000, PropagateAtLaunch: true}
 
   LaunchConfig:
