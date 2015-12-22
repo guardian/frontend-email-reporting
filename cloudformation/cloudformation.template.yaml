@@ -16,7 +16,7 @@ Parameters:
   ImageId:
     Description: AMI id
     Type: AWS::EC2::Image::Id
-    Default: "ami-748e2903"
+    Default: "ami-2ce4465f"
 
 Resources:
   Role:
@@ -38,6 +38,9 @@ Resources:
           Effect: Allow
           Resource:
             - "arn:aws:dynamodb:eu-west-1:642631414762:table/email-send-report-TEST"
+        - Action: ["EC2:Describe*"]
+          Effect: "Allow"
+          Resource: "*"
       Roles:
       - {Ref: Role}
   InstanceProfile:
@@ -53,7 +56,7 @@ Resources:
       SecurityGroups:
       - {Ref: ELBSecurityGroup}
       Subnets: {Ref: Subnets}
-      Scheme: internal
+      Scheme: internet-facing
       Listeners:
       - {LoadBalancerPort: 443, InstancePort: 9000, Protocol: HTTPS, SSLCertificateId: "arn:aws:iam::642631414762:server-certificate/email.gutools.co.uk-exp2017-12-20" }
       HealthCheck:
@@ -94,13 +97,7 @@ Resources:
       UserData:
         Fn::Base64: |
           #!/bin/bash -ev
-          adduser --system --home /frontend-email-reporting reporting
-          echo PROD > /etc/stage
-          aws --region eu-west-1 s3 cp s3://frontend-email-reporting-dist/frontend/PROD/email-reporting/email-reporting.conf /etc/init
-          aws --region eu-west-1 s3 cp s3://frontend-email-reporting-dist/frontend/PROD/email-reporting/email-reporting.tgz /frontend-email-reporting
-          tar -xzC /frontend-email-reporting -f /frontend-email-reporting/email-reporting.tgz
-          chown -R reporting /frontend-email-reporting
-          start /frontend-email-reporting
+          /opt/features/native-packager/install.sh -b frontend-email-reporting-dist -s -t tgz
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
