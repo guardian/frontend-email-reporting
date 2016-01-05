@@ -1,8 +1,2 @@
 -e git+https://github.com/janua/FuelSDK-Python.git@95351755b86564c40c59cf88b359b3c49d479a1d#egg=FuelSDK-dev
-PyJWT==0.1.9
-argparse==1.2.1
 boto==2.38.0
-distribute==0.6.24
-requests==2.2.1
-suds==0.4
-wsgiref==0.1.2
