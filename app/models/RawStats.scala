@@ -8,17 +8,17 @@ import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-case class SignupMetric(hits: Int, date: String)
+case class InsertMetric(hits: Int, date: String)
 
-object SignupMetric {
-  implicit val signupMetricWrites = Json.writes[SignupMetric]
+object InsertMetric {
+  implicit val signupMetricWrites = Json.writes[InsertMetric]
 }
 
 object RawStats {
 
   val TableName = "email-signup-stats"
 
-  def getRawStatsFor(listId: Int): Future[List[SignupMetric]] = {
+  def getRawStatsFor(listId: Int): Future[List[InsertMetric]] = {
     val queryRequest = new QueryRequest()
       .withTableName(TableName)
       .withKeyConditionExpression("list_id = :listId")
@@ -32,5 +32,5 @@ object RawStats {
           for {
             hits <- attributeMap.get("hits").map(_.getN)
             date <- attributeMap.get("date").map(_.getS)
-          } yield SignupMetric(hits.toInt, date)}}}
+          } yield InsertMetric(hits.toInt, date)}}}
 }
