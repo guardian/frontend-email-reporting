@@ -105,7 +105,7 @@ Resources:
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: trigr instance
+      GroupDescription: Email reporting instance
       VpcId: {Ref: VPC}
       SecurityGroupIngress:
       - {IpProtocol: tcp, FromPort: 9000, ToPort: 9000, SourceSecurityGroupId: {Ref: ELBSecurityGroup} }

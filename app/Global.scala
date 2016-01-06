@@ -3,6 +3,7 @@ import actions.CommonActions
 import play.api.GlobalSettings
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.mvc._
+import play.api.routing.Router.Routes
 
 import scala.concurrent.Future
 
@@ -23,7 +24,7 @@ class AuthorizedFilter(actionNames: Seq[String]) extends Filter with CommonActio
   }
 
   private def authorizationNotRequired(request: RequestHeader) = {
-    val actionInvoked: String = request.tags.getOrElse(play.api.Routes.ROUTE_ACTION_METHOD, "")
+    val actionInvoked: String = request.tags.getOrElse(play.api.routing.Router.Tags.RouteActionMethod, "")
     actionNames.contains(actionInvoked)
   }
 }
@@ -47,7 +48,7 @@ object HTTPSRedirectFilter extends Filter {
   }
 }
 
-object Global extends WithFilters(HTTPSRedirectFilter, AuthorizedFilter("login", "loginAction", "oauth2Callback", "health")) with GlobalSettings {
+object Global extends WithFilters(HTTPSRedirectFilter, AuthorizedFilter("login", "loginAction", "oauth2Callback", "healthcheck")) with GlobalSettings {
 
   override def onStart(application: play.api.Application): Unit = {}
 
