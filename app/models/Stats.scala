@@ -4,7 +4,7 @@ import awswrappers.dynamodb._
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap
 import models.StatsTable.{EmailSendItem, EmailStats}
-import org.joda.time.DateTime
+import org.joda.time.{Interval, ReadableInstant, Duration, DateTime}
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json.{Writes, Json}
 import com.amazonaws.services.dynamodbv2.model._
@@ -53,6 +53,35 @@ case class EmailStatsSeriesData(
       this.numberDelivered ++ b.numberDelivered,
       this.unsubscribes ++ b.unsubscribes
     )
+  }
+
+  def groupByDay = {
+    this.copy(
+      filterByDay(this.existingUndeliverables),
+      filterByDay(this.existingUnsubscribes),
+      filterByDay(this.hardBounces),
+      filterByDay(this.softBounces),
+      filterByDay(this.otherBounces),
+      filterByDay(this.forwardedEmails),
+      filterByDay(this.uniqueClicks),
+      filterByDay(this.uniqueOpens),
+      filterByDay(this.numberSent),
+      filterByDay(this.numberDelivered),
+      filterByDay(this.unsubscribes)
+    )
+  }
+
+  def filterByDay(items: List[DateTimePoint]): List[DateTimePoint] = {
+    //work out total duration of time series
+    val start = new DateTime(items.head.timestamp)
+    val end = new DateTime(items.last.timestamp)
+    val days = new Duration(start, end).getStandardDays.toInt
+    //filter so we only have one item per day
+    (0 to days).map { day =>
+      val newItems = items.filter(item => new DateTime(item.timestamp).toLocalDate == start.plusDays(day).toLocalDate)
+      //sometimes there are no entry for a day, so just don't report a value for that day
+      newItems.lastOption.orElse(None)
+    }.toList.flatten
   }
 }
 
@@ -156,50 +185,50 @@ object StatsTable {
         sentDate <- xs.getString("SentDate")
         emailName <- xs.getString("EmailName")
         status <- xs.getString("Status")
-        isMultipart <- xs.getBoolean("IsMultipart")
-        isAlwaysOn <- xs.getBoolean("IsAlwaysOn")
+        isMultipart <- xs.getInt("IsMultipart").map(_ == 1)
+        isAlwaysOn <- xs.getInt("IsAlwaysOn").map(_ == 1)
         numberTargeted <- xs.getInt("NumberTargeted")
         numberErrored <- xs.getInt("NumberErrored")
         numberExcluded <- xs.getInt("NumberExcluded")
         additional <- xs.getString("Additional")
       } yield {
-        EmailSendItem(
-          listId,
-          dateTime,
-          sendDate,
-          fromAddress,
-          fromName,
-          duplicates,
-          invalidAddresses,
-          EmailStats(
+          EmailSendItem(
+            listId,
             dateTime,
-            existingUndeliverables,
-            existingUnsubscribes,
-            hardBounces,
-            softBounces,
-            otherBounces,
-            forwardedEmails,
-            uniqueClicks,
-            uniqueOpens,
-            numberSent,
-            numberDelivered,
-            unsubscribes),
-          EmailInfo(
-            dateTime,
-            missingAddresses,
-            subject,
-            previewURL,
-            sentDate,
-            emailName,
-            status,
-            isMultipart,
-            isAlwaysOn,
-            numberTargeted,
-            numberErrored,
-            numberExcluded,
-            additional
+            sendDate,
+            fromAddress,
+            fromName,
+            duplicates,
+            invalidAddresses,
+            EmailStats(
+              dateTime,
+              existingUndeliverables,
+              existingUnsubscribes,
+              hardBounces,
+              softBounces,
+              otherBounces,
+              forwardedEmails,
+              uniqueClicks,
+              uniqueOpens,
+              numberSent,
+              numberDelivered,
+              unsubscribes),
+            EmailInfo(
+              dateTime,
+              missingAddresses,
+              subject,
+              previewURL,
+              sentDate,
+              emailName,
+              status,
+              isMultipart,
+              isAlwaysOn,
+              numberTargeted,
+              numberErrored,
+              numberExcluded,
+              additional
+            )
           )
-        )
       }
     }
   }
@@ -254,7 +283,6 @@ object StatsTable {
   }
 
   def query(id: Int, startDate: DateTime, endDate: DateTime): Future[Seq[EmailSendItem]]  = {
-
     def iter(lastEvaluatedKey: Option[java.util.Map[String, AttributeValue]]): Future[Seq[StatsTable.EmailSendItem]] = {
       val queryRequest = new QueryRequest()
         .withTableName(TableName)

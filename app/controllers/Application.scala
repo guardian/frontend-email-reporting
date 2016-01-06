@@ -15,7 +15,7 @@ class Application extends Controller {
     val from = times.from.getMillis.toString
     val to = times.to.getMillis.toString
 
-    Ok(views.html.index("The Guardian Daily Email", Reports.lists, from, to))
+    Ok(views.html.index("The Guardian Daily Email", Reports.emailSendDefinition, from, to))
   }
 
   def stats(id: Int, times: TimeFilter) = Action.async { request =>
@@ -26,11 +26,14 @@ class Application extends Controller {
 
   def rawStats() = Action.async {
     val allRawStats: Future[List[RawStats.InsertMetricGraphStructure]] =
-      Future.traverse(Reports.lists.values.toList){listId =>
+      Future.traverse(Reports.niceNames.keys.toList){listId =>
         RawStats.getRawStatsFor(listId)
           .map(listOfSignupMetrics =>
             RawStats.graphStructureForInsertMetrics(listId, listOfSignupMetrics))}
 
-    allRawStats.map(rawStats => Ok(views.html.rawstats(Json.toJson(rawStats))))
+    allRawStats.map(rawStats => Ok(views.html.rawstats(Json.toJson(rawStats))))}
+
+  def healthcheck = Action { request =>
+    Ok("OK")
   }
 }

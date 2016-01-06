@@ -1,0 +1,6 @@
+{
+  "name": "EmailReporting stylesheets",
+  "dependencies": {
+    "sass-mq": "~3.2.0"
+  }
+}

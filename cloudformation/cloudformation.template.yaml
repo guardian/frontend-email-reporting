@@ -1,0 +1,120 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Frontend email reporting template'
+
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+  Subnets:
+    Description: Subnet to run the load balancer within
+    Type: CommaDelimitedList
+    Default: "subnet-7196d528, subnet-5ff8fb3a, subnet-d20328a5"
+  VPC:
+    Description: VPC to run instances within
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-9c366ef9"
+  ImageId:
+    Description: AMI id
+    Type: AWS::EC2::Image::Id
+    Default: "ami-8b60cef8"
+
+Resources:
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal: { Service: [ec2.amazonaws.com] }
+          Action: ['sts:AssumeRole']
+  Policy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EmailReportPolicy
+      PolicyDocument:
+        Statement:
+        - Action: ["dynamodb:*"]
+          Effect: Allow
+          Resource:
+            - "arn:aws:dynamodb:eu-west-1:642631414762:table/email-send-report-TEST"
+        - Action: ["EC2:Describe*"]
+          Effect: "Allow"
+          Resource: "*"
+        - Action: ["S3:getObject"]
+          Effect: Allow
+          Resource: "arn:aws:s3:::frontend-email-reporting-dist/*"
+      Roles:
+      - {Ref: Role}
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - {Ref: Role}
+
+  ELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      SecurityGroups:
+      - {Ref: ELBSecurityGroup}
+      Subnets: {Ref: Subnets}
+      Scheme: internet-facing
+      Listeners:
+      - {LoadBalancerPort: 443, InstancePort: 9000, Protocol: HTTPS, SSLCertificateId: "arn:aws:iam::642631414762:server-certificate/email.gutools.co.uk-exp2017-12-20" }
+      HealthCheck:
+        Target: 'HTTP:9000/healthcheck'
+        HealthyThreshold: 2
+        UnhealthyThreshold: 2
+        Interval: 10
+        Timeout: 5
+
+  ASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: {'Fn::GetAZs': ''}
+      VPCZoneIdentifier: {Ref: Subnets}
+      LaunchConfigurationName: {Ref: LaunchConfig}
+      MinSize: 1
+      MaxSize: 2
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 300
+      LoadBalancerNames:
+      - {Ref: ELB}
+      Tags:
+      - {Key: Stage, Value: PROD, PropagateAtLaunch: true}
+      - {Key: Stack, Value: frontend, PropagateAtLaunch: true}
+      - {Key: App, Value: email-reporting, PropagateAtLaunch: true}
+      - {Key: Management, Value: port=9000, PropagateAtLaunch: true}
+
+  LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      KeyName: {Ref: KeyName}
+      ImageId: {Ref: ImageId}
+      SecurityGroups:
+      - {Ref: InstanceSecurityGroup}
+      InstanceType: t2.small
+      IamInstanceProfile: {Ref: InstanceProfile}
+      AssociatePublicIpAddress: true
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash -ev
+          aws s3 cp s3://frontend-email-reporting-dist/frontend/PROD/email-reporting/email-reporting-keys.conf /etc/gu/email-reporting-keys.conf
+          /opt/features/native-packager/install.sh -b frontend-email-reporting-dist -s -t tgz
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Email reporting instance
+      VpcId: {Ref: VPC}
+      SecurityGroupIngress:
+      - {IpProtocol: tcp, FromPort: 9000, ToPort: 9000, SourceSecurityGroupId: {Ref: ELBSecurityGroup} }
+      - {IpProtocol: tcp, FromPort: 22, ToPort: 22, CidrIp: 77.91.248.0/21 }
+
+  ELBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: frontend-email-reporting
+      VpcId: {Ref: VPC}
+      SecurityGroupIngress:
+      - {IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0}
