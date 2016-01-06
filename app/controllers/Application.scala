@@ -27,22 +27,12 @@ class Application extends Controller {
   }
 
   def rawStats() = Action.async {
-    val allRawStats: Future[JsArray] =
-      Future.traverse(Reports.lists.values){listId =>
+    val allRawStats: Future[List[RawStats.InsertMetricGraphStructure]] =
+      Future.traverse(Reports.lists.values.toList){listId =>
         RawStats.getRawStatsFor(listId)
           .map(listOfSignupMetrics =>
-            Json.obj(
-              "name" -> Reports.niceNames.getOrElse[String](listId, listId.toString),
-              "visible" -> true,
-              "data" -> listOfSignupMetrics.map{ metric =>
-                val dateAsLong: Long = DateTime.parse(metric.date,
-                  DateTimeFormat.forPattern("yyyy-MM-dd")).getMillis
+            RawStats.graphStructureForInsertMetrics(listId, listOfSignupMetrics))}
 
-                JsArray(List(JsNumber(dateAsLong), JsNumber(metric.hits)))}
-            ))}
-      .map(_.toList)
-      .map(JsArray(_))
-
-    allRawStats.map(rawStats => Ok(views.html.rawstats(rawStats)))
+    allRawStats.map(rawStats => Ok(views.html.rawstats(Json.toJson(rawStats))))
   }
 }
