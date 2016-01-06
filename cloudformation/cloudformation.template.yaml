@@ -43,7 +43,13 @@ Resources:
           Resource: "*"
         - Action: ["S3:getObject"]
           Effect: Allow
-          Resource: "arn:aws:s3:::frontend-email-reporting-dist/*"
+          Resource: [
+            "arn:aws:s3:::frontend-email-reporting-dist/*",
+            "arn:aws:s3:::github-team-keys/*"
+            ]
+        - Action: ["s3:ListBucket"]
+          Effect: Allow
+          Resource: ["arn:aws:s3:::github-team-keys"]
       Roles:
       - {Ref: Role}
   InstanceProfile:
@@ -101,6 +107,7 @@ Resources:
         Fn::Base64: |
           #!/bin/bash -ev
           aws s3 cp s3://frontend-email-reporting-dist/frontend/PROD/email-reporting/email-reporting-keys.conf /etc/gu/email-reporting-keys.conf
+          /opt/features/ssh-keys/initialise-keys-and-cron-job.sh -b github-team-keys -t Guardian-Frontend
           /opt/features/native-packager/install.sh -b frontend-email-reporting-dist -s -t tgz
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
