@@ -2,9 +2,12 @@ package controllers
 
 import lib.TimeFilter
 import models.Reports._
-import models.{Reports, StatsTable}
+import models.{RawStats, Reports, StatsTable}
 import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+import play.api.libs.json._
 import play.api.mvc._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -21,5 +24,25 @@ class Application extends Controller {
     StatsTable.query(id, times.from, times.to).map { stats =>
       Ok(buildBasicStats(stats))
     }
+  }
+
+  def rawStats() = Action.async {
+    val allRawStats: Future[JsArray] =
+      Future.traverse(Reports.lists.values){listId =>
+        RawStats.getRawStatsFor(listId)
+          .map(listOfSignupMetrics =>
+            Json.obj(
+              "name" -> listId,
+              "visible" -> true,
+              "data" -> listOfSignupMetrics.map{ metric =>
+                val dateAsLong: Long = DateTime.parse(metric.date,
+                  DateTimeFormat.forPattern("yyyy-MM-dd")).getMillis
+
+                JsArray(List(JsNumber(dateAsLong), JsNumber(metric.hits)))}
+            ))}
+      .map(_.toList)
+      .map(JsArray(_))
+
+    allRawStats.map(rawStats => Ok(views.html.rawstats(rawStats)))
   }
 }
