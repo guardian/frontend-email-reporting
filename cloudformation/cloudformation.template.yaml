@@ -16,7 +16,7 @@ Parameters:
   ImageId:
     Description: AMI id
     Type: AWS::EC2::Image::Id
-    Default: "ami-7463cd07"
+    Default: "ami-8b60cef8"
 
 Resources:
   Role:
