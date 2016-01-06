@@ -23,7 +23,7 @@ object RawStats {
   case class InsertMetricGraphStructure(
     name: String,
     visible: Boolean,
-    //Inner list are tuples (date, hits)
+    //Inner list items are tuples (date, hits)
     data: List[List[Long]])
 
   object InsertMetricGraphStructure {

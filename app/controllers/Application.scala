@@ -3,8 +3,6 @@ package controllers
 import lib.TimeFilter
 import models.Reports._
 import models.{RawStats, Reports, StatsTable}
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import play.api.libs.json._
 import play.api.mvc._
 
