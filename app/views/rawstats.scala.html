@@ -1,0 +1,83 @@
+@(rawStats: play.api.libs.json.JsArray)
+
+@import play.api.libs.json.Json
+@import play.api.libs.json.Writes._
+
+
+@main("Raw Insert Stats") {
+	<div id="chart"></div>
+
+	<script type="text/javascript">
+			function makeChart(data, title){
+				$(function () {
+					$('#chart').highcharts('StockChart', {
+						chart: {
+							type: 'line'
+						},
+						title: {
+							text: title
+						},
+						xAxis: {
+							type: 'datetime',
+							labels: {
+								enabled: true
+							}
+						},
+						yAxis: {
+							title: {
+								text: 'Number of raw inserts'
+							}
+						},
+						rangeSelector: {
+							enabled: false
+						},
+						scrollbar: {
+							enabled: false
+						},
+						navigator: {
+							enabled: false
+						},
+						legend: {
+							enabled: true
+						},
+						tooltip: {
+							compare: true,
+							followPointer: true,
+							positioner: function (labelWidth, labelHeight, point) {
+								return {x: 20, y: 0};
+							},
+							hideDelay: 10000
+						},
+						plotOptions: {
+							line: {
+								marker: {
+									enabled: true,
+									symbol: 'circle',
+									radius: 3,
+									states: {
+										hover: {
+											enabled: true
+										}
+									}
+								},
+								shadow: true
+							}
+						},
+						series: data
+					});
+				});
+			}
+	</script>
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+	<script src="http://code.highcharts.com/stock/highstock.js"></script>
+
+	<script type="text/javascript">
+			var rawStats = @Html(Json.stringify(rawStats));
+			makeChart(rawStats, "Raw Insert Stats");
+	</script>
+}
