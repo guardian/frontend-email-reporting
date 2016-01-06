@@ -32,7 +32,7 @@ class Application extends Controller {
         RawStats.getRawStatsFor(listId)
           .map(listOfSignupMetrics =>
             Json.obj(
-              "name" -> listId,
+              "name" -> Reports.niceNames.getOrElse[String](listId, listId.toString),
               "visible" -> true,
               "data" -> listOfSignupMetrics.map{ metric =>
                 val dateAsLong: Long = DateTime.parse(metric.date,

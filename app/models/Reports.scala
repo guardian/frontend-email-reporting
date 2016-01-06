@@ -12,6 +12,11 @@ object Reports {
     "guardianTodayAu" -> 1506
   )
 
+  val niceNames = Map[Int, String](
+    37 -> "UK Today",
+    1493 -> "US Today",
+    1506 ->"AU Today")
+
   def buildBasicStats(data: Seq[EmailSendItem]): JsValue = {
     EmailStatsSeriesData.toJson(mergeStats(data))
   }
