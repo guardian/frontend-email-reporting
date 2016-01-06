@@ -16,7 +16,7 @@ Parameters:
   ImageId:
     Description: AMI id
     Type: AWS::EC2::Image::Id
-    Default: "ami-2ce4465f"
+    Default: "ami-8b60cef8"
 
 Resources:
   Role:
@@ -41,6 +41,9 @@ Resources:
         - Action: ["EC2:Describe*"]
           Effect: "Allow"
           Resource: "*"
+        - Action: ["S3:getObject"]
+          Effect: Allow
+          Resource: "arn:aws:s3:::frontend-email-reporting-dist/*"
       Roles:
       - {Ref: Role}
   InstanceProfile:
@@ -97,11 +100,12 @@ Resources:
       UserData:
         Fn::Base64: |
           #!/bin/bash -ev
+          aws s3 cp s3://frontend-email-reporting-dist/frontend/PROD/email-reporting/email-reporting-keys.conf /etc/gu/email-reporting-keys.conf
           /opt/features/native-packager/install.sh -b frontend-email-reporting-dist -s -t tgz
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: trigr instance
+      GroupDescription: Email reporting instance
       VpcId: {Ref: VPC}
       SecurityGroupIngress:
       - {IpProtocol: tcp, FromPort: 9000, ToPort: 9000, SourceSecurityGroupId: {Ref: ELBSecurityGroup} }

@@ -1,3 +1,4 @@
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient
@@ -9,8 +10,12 @@ import play.api.libs.json.{Format, Json}
 import scala.util.Try
 
 package object models {
-  val dynamoDbClient: AmazonDynamoDBAsyncClient =
+  val dynamoDbClient: AmazonDynamoDBAsyncClient = if (play.api.Play.isDev(play.api.Play.current)) {
     new AmazonDynamoDBAsyncClient(new ProfileCredentialsProvider("frontend")).withRegion(Regions.EU_WEST_1)
+  } else {
+    new AmazonDynamoDBAsyncClient().withRegion(Regions.EU_WEST_1)
+  }
+
 
   implicit class RichAttributeMap(map: Map[String, AttributeValue]) {
     def getString(k: String): Option[String] =
