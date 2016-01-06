@@ -10,13 +10,7 @@ object Reports {
     "guardianTodayUk_all" -> 111,
     "guardianTodayUk_new" -> 16216,
     "guardianTodayUs" -> 16125,
-    "guardianTodayAu" -> 2014
-  )
-
-  val niceNames = Map[Int, String](
-    37 -> "UK Today",
-    1493 -> "US Today",
-    1506 ->"AU Today")
+    "guardianTodayAu" -> 2014)
 
   def buildBasicStats(data: Seq[EmailSendItem]): JsValue = {
     EmailStatsSeriesData.toJson(mergeStats(data).groupByDay)

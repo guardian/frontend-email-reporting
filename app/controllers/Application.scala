@@ -26,7 +26,7 @@ class Application extends Controller {
 
   def rawStats() = Action.async {
     val allRawStats: Future[List[RawStats.InsertMetricGraphStructure]] =
-      Future.traverse(Reports.niceNames.keys.toList){listId =>
+      Future.traverse(RawStats.listIdAndNames.keys.toList){listId =>
         RawStats.getRawStatsFor(listId)
           .map(listOfSignupMetrics =>
             RawStats.graphStructureForInsertMetrics(listId, listOfSignupMetrics))}

@@ -19,6 +19,11 @@ object InsertMetric {
 object RawStats {
   val TableName = "email-signup-stats"
 
+  val listIdAndNames = Map[Int, String](
+    37 -> "UK Today",
+    1493 -> "US Today",
+    1506 ->"AU Today")
+
   //Aim of class is to convert directly to JSON used by highcharts
   case class InsertMetricGraphStructure(
     name: String,
@@ -48,7 +53,7 @@ object RawStats {
 
   def graphStructureForInsertMetrics(listId: Int, insertMetrics: List[InsertMetric]): InsertMetricGraphStructure =
     InsertMetricGraphStructure(
-      name=Reports.niceNames.getOrElse[String](listId, listId.toString),
+      name=listIdAndNames.getOrElse[String](listId, listId.toString),
       visible=true,
       data=insertMetrics.map{
         insertMetric =>
