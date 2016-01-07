@@ -1,0 +1,9 @@
+{
+  "name": "EmailReporting JavaScripts",
+  "dependencies": {
+    "requirejs": "~2.1.22",
+    "moment": "2.10.6",
+    "bootstrap-daterangepicker": "~2.1.17",
+    "query-object": "~2.0.2"
+  }
+}

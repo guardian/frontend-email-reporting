@@ -6,14 +6,14 @@ import play.api.libs.json._
 
 object Reports {
 
-  val lists = Map[String, Int](
-    "guardianTodayUk" -> 37,
-    "guardianTodayUs" -> 1493,
-    "guardianTodayAu" -> 1506
-  )
+  val emailSendDefinition = Map[String, Int](
+    "Guardian Today Uk all" -> 111,
+    "Guardian Today Uk new" -> 16216,
+    "Guardian Today Us" -> 16125,
+    "Guardian Today Au" -> 2014)
 
   def buildBasicStats(data: Seq[EmailSendItem]): JsValue = {
-    EmailStatsSeriesData.toJson(mergeStats(data))
+    EmailStatsSeriesData.toJson(mergeStats(data).groupByDay)
   }
 
   def mergeStats(data: Seq[EmailSendItem]): EmailStatsSeriesData = {

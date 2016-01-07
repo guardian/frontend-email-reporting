@@ -25,3 +25,10 @@ local/
 lib/
 dist/
 collector/src
+
+*assets/javascripts/lib/
+*assets/stylesheets/lib/
+
+cloudformation.json
+node_modules
+public
