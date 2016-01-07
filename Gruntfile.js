@@ -220,15 +220,6 @@ module.exports = function (grunt) {
             'compile:css',
             'compile:js'
         ]);
-        /**
-         * Only version files for prod builds
-         * Wipe out unused non-versioned assets for good measure
-         */
-        if (!isDev) {
-            grunt.task.run([
-                'clean:public:prod'
-            ]);
-        }
     });
 
     /***********************************************************************

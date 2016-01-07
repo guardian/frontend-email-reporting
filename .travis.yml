@@ -9,6 +9,7 @@ before_install:
 jdk:
 - oraclejdk8
 script:
+- npm runcompile
 - sbt clean test riffRaffUpload
 cache:
   directories:
