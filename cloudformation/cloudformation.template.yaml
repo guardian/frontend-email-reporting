@@ -38,6 +38,10 @@ Resources:
           Effect: Allow
           Resource:
             - "arn:aws:dynamodb:eu-west-1:642631414762:table/email-send-report-TEST"
+        - Action: ["dynamodb:*"]
+          Effect: Allow
+          Resource:
+            - "arn:aws:dynamodb:eu-west-1:642631414762:table/email-signup-stats"
         - Action: ["EC2:Describe*"]
           Effect: "Allow"
           Resource: "*"
