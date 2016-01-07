@@ -2,9 +2,10 @@ package controllers
 
 import lib.TimeFilter
 import models.Reports._
-import models.{Reports, StatsTable}
-import org.joda.time.DateTime
+import models.{RawStats, Reports, StatsTable}
+import play.api.libs.json._
 import play.api.mvc._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -22,6 +23,15 @@ class Application extends Controller {
       Ok(buildBasicStats(stats))
     }
   }
+
+  def rawStats() = Action.async {
+    val allRawStats: Future[List[RawStats.InsertMetricGraphStructure]] =
+      Future.traverse(RawStats.listIdAndNames.keys.toList){listId =>
+        RawStats.getRawStatsFor(listId)
+          .map(listOfSignupMetrics =>
+            RawStats.graphStructureForInsertMetrics(listId, listOfSignupMetrics))}
+
+    allRawStats.map(rawStats => Ok(views.html.rawstats(Json.toJson(rawStats))))}
 
   def healthcheck = Action { request =>
     Ok("OK")

@@ -10,8 +10,7 @@ object Reports {
     "guardianTodayUk_all" -> 111,
     "guardianTodayUk_new" -> 16216,
     "guardianTodayUs" -> 16125,
-    "guardianTodayAu" -> 2014
-  )
+    "guardianTodayAu" -> 2014)
 
   def buildBasicStats(data: Seq[EmailSendItem]): JsValue = {
     EmailStatsSeriesData.toJson(mergeStats(data).groupByDay)
