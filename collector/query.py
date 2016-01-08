@@ -1,8 +1,8 @@
 import datetime
 import client
-from itertools import imap
 from sendresult import SendResult
-import dynamodb
+from itertools import izip_longest, imap
+import config
 
 import logging
 logger = logging.getLogger()
@@ -82,21 +82,35 @@ def createdDateAfterDateFilter(after):
     return dateValueGreaterThan('CreatedDate', after.isoformat())
 
 
+def grouper(iterable, n, fillvalue=None):
+    "Collect data into fixed-length chunks or blocks"
+    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
+    args = [iter(iterable)] * n
+    return izip_longest(fillvalue=fillvalue, *args)
+
+
+def buildOrsFromList(orList):
+    """
+    Build a nested OR structure for exact target
+    :param orList: list of items to get OR'd
+    :return: exactTargetOr structure
+    """
+    if len(orList) == 2:
+        return exactTargetOr(orList[0], orList[1])
+    else:
+        return buildOrsFromList(
+            [exactTargetOr(first, second) if second else first for first, second in grouper(orList, 2)])
+
+
 def getLastNDaySends(days=1):
     """
     :param days: Last number of days to get
     :return: [SendResult]
     """
+    orLists = buildOrsFromList(list(imap(lambda id: sendWithSendDefinition(id), config.SEND_DEFINITIONS)))
+
     searchFilter = exactTargetAnd(
-        exactTargetOr(
-            exactTargetOr(
-                exactTargetOr(
-                    sendWithSendDefinition(111),
-                    sendWithSendDefinition(16216)),
-                exactTargetOr(
-                    sendWithSendDefinition(1933),
-                    sendWithSendDefinition(2014))),
-            sendWithSendDefinition(16125)),
+        orLists,
         sendDateAfterDateFilter(
             daysAgo(days)))
 
