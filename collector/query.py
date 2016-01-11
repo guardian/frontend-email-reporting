@@ -1,11 +1,12 @@
 import datetime
 import client
-from itertools import imap
 from sendresult import SendResult
-import dynamodb
-
+from itertools import izip_longest, imap
+import config
 import logging
+
 logger = logging.getLogger()
+
 
 def yesterday():
     return datetime.datetime.now() - datetime.timedelta(days=1)
@@ -82,21 +83,44 @@ def createdDateAfterDateFilter(after):
     return dateValueGreaterThan('CreatedDate', after.isoformat())
 
 
+def grouper(iterable, n, fillvalue=None):
+    "Collect data into fixed-length chunks or blocks"
+    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
+    args = [iter(iterable)] * n
+    return izip_longest(fillvalue=fillvalue, *args)
+
+
+def buildNestedQueryFromList(listOfItems,
+                             nodeTransformationFunction=exactTargetAnd):
+    """
+    Build a nested OR structure for exact target
+    :param nodeTransformationFunction: Function called with two items of each nested item (default is AND)
+    :param listOfItems: list of items to get transformed to nested query
+    :return: exactTargetOr structure
+    """
+    if len(listOfItems) == 2:
+        return exactTargetOr(listOfItems[0], listOfItems[1])
+    else:
+        return buildNestedQueryFromList(
+            [nodeTransformationFunction(first, second) if second else first for first, second in
+             grouper(listOfItems, 2)],
+            nodeTransformationFunction)
+
+
 def getLastNDaySends(days=1):
     """
     :param days: Last number of days to get
     :return: [SendResult]
     """
+    sendDefinitionList = list(imap(lambda listId: sendWithSendDefinition(listId), config.SEND_DEFINITIONS))
+
+    # Big list of ORs, this is the same as saying 1 OR 2 OR 3 OR 4, but it needs to be nested because of exact target
+    orLists = buildNestedQueryFromList(
+        sendDefinitionList,
+        exactTargetOr)
+
     searchFilter = exactTargetAnd(
-        exactTargetOr(
-            exactTargetOr(
-                exactTargetOr(
-                    sendWithSendDefinition(111),
-                    sendWithSendDefinition(16216)),
-                exactTargetOr(
-                    sendWithSendDefinition(1933),
-                    sendWithSendDefinition(2014))),
-            sendWithSendDefinition(16125)),
+        orLists,
         sendDateAfterDateFilter(
             daysAgo(days)))
 
@@ -120,4 +144,3 @@ def getListSubscriberCount():
     print 'Message: ' + str(response.message)
     print 'Result Count: ' + str(len(response.results))
     print 'Results: ' + str(response.results)
-
