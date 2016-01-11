@@ -3,9 +3,10 @@ import client
 from sendresult import SendResult
 from itertools import izip_longest, imap
 import config
-
 import logging
+
 logger = logging.getLogger()
+
 
 def yesterday():
     return datetime.datetime.now() - datetime.timedelta(days=1)
@@ -89,17 +90,21 @@ def grouper(iterable, n, fillvalue=None):
     return izip_longest(fillvalue=fillvalue, *args)
 
 
-def buildOrsFromList(orList):
+def buildNestedQueryFromList(listOfItems,
+                             nodeTransformationFunction=exactTargetAnd):
     """
     Build a nested OR structure for exact target
-    :param orList: list of items to get OR'd
+    :param nodeTransformationFunction: Function called with two items of each nested item (default is AND)
+    :param listOfItems: list of items to get transformed to nested query
     :return: exactTargetOr structure
     """
-    if len(orList) == 2:
-        return exactTargetOr(orList[0], orList[1])
+    if len(listOfItems) == 2:
+        return exactTargetOr(listOfItems[0], listOfItems[1])
     else:
-        return buildOrsFromList(
-            [exactTargetOr(first, second) if second else first for first, second in grouper(orList, 2)])
+        return buildNestedQueryFromList(
+            [nodeTransformationFunction(first, second) if second else first for first, second in
+             grouper(listOfItems, 2)],
+            nodeTransformationFunction)
 
 
 def getLastNDaySends(days=1):
@@ -107,7 +112,12 @@ def getLastNDaySends(days=1):
     :param days: Last number of days to get
     :return: [SendResult]
     """
-    orLists = buildOrsFromList(list(imap(lambda id: sendWithSendDefinition(id), config.SEND_DEFINITIONS)))
+    sendDefinitionList = list(imap(lambda listId: sendWithSendDefinition(listId), config.SEND_DEFINITIONS))
+
+    # Big list of ORs, this is the same as saying 1 OR 2 OR 3 OR 4, but it needs to be nested because of exact target
+    orLists = buildNestedQueryFromList(
+        sendDefinitionList,
+        exactTargetOr)
 
     searchFilter = exactTargetAnd(
         orLists,
@@ -134,4 +144,3 @@ def getListSubscriberCount():
     print 'Message: ' + str(response.message)
     print 'Result Count: ' + str(len(response.results))
     print 'Results: ' + str(response.results)
-
