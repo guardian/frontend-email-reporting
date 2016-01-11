@@ -12,11 +12,11 @@ def runCron(event, context):
     :return: None
     """
     sends = list(query.getLastNDaySends(2))
-    logger.info('Received event: {0}'.format(event))
+    print 'Received event: {0}'.format(event)
     for send in sends:
-        logger.info('Putting SEND to dynamo: {0}'.format(send))
+        print 'Putting SEND to dynamo: {0}'.format(send)
         dynamoResponse = dynamodb.putToSendTableWithNowDate(send)
-        logger.info('Response from DynamoDB: {0}'.format(dynamoResponse))
+        print 'Response from DynamoDB: {0}'.format(dynamoResponse)
 
 
 def backfillDatabase():
