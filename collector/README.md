@@ -5,7 +5,7 @@ Ensure you have `easy_install`, `pip` and `virtualenv` installed at a system lev
 
 Ensure you have `make` on your system.
 
-Ensure you have credentials on your system for the `frontend` account.
+Ensure you have AWS credentials on your system for the `frontend` account.
 
 ## Python Environment
 
