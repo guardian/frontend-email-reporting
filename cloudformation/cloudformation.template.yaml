@@ -17,6 +17,10 @@ Parameters:
     Description: AMI id
     Type: AWS::EC2::Image::Id
     Default: "ami-8b60cef8"
+  StatsTableName:
+    Description: DynamoDB table name for stats
+    Type: String
+    Default: "email-send-report"
 
 Resources:
   Role:
@@ -42,6 +46,10 @@ Resources:
           Effect: Allow
           Resource:
             - "arn:aws:dynamodb:eu-west-1:642631414762:table/email-signup-stats"
+        - Action: ["dynamodb:*"]
+          Effect: Allow
+          Resource:
+            Fn::Join: [":", ["arn:aws:dynamodb", {Ref: AWS::Region}, {Ref: AWS::AccountId}, ":table/", {Ref: EmailSendReportTable}]]
         - Action: ["EC2:Describe*"]
           Effect: "Allow"
           Resource: "*"
@@ -56,12 +64,27 @@ Resources:
           Resource: ["arn:aws:s3:::github-team-keys"]
       Roles:
       - {Ref: Role}
+
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
       - {Ref: Role}
+
+  EmailSendReportTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: {Ref: StatsTableName}
+      KeySchema:
+        - {AttributeName: listId, KeyType: HASH}
+        - {AttributeName: dateTime, KeyType: RANGE}
+      AttributeDefinitions:
+        - {AttributeName: listId, AttributeType: S}
+        - {AttributeName: dateTime, AttributeType: S}
+      ProvisionedThroughput:
+        ReadCapacityUnits: 20
+        WriteCapacityUnits: 5
 
   ELB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
