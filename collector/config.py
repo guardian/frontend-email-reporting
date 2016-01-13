@@ -9,6 +9,7 @@ GuTodayUk = 111
 GuTodayUs = 1933
 GuardianTodayUsFinalA = 16125
 GuardianTodayUsFinalB = 16126
+GuardianTodayUsFinalNew = 16127
 
 
 # AU Send Definitions
@@ -20,5 +21,6 @@ SEND_DEFINITIONS = [
     GuTodayUs,
     GuardianTodayUsFinalA,
     GuardianTodayUsFinalB,
+    GuardianTodayUsFinalNew,
     GuTodayAu
 ]
