@@ -1,4 +1,6 @@
 
+EmailStatsTableName = 'email-send-report-TEST'
+
 # UK Send Definitions
 GuTodayUk = 111
 

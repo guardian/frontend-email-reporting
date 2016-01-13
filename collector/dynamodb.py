@@ -1,11 +1,10 @@
 import datetime
 import boto.dynamodb
-from boto.dynamodb2.table import Table
+from config import EmailStatsTableName
 
 dynamoDB = boto.dynamodb.connect_to_region(region_name='eu-west-1')
-table_name = 'email-send-report-TEST'
 
-sendTable = dynamoDB.get_table(table_name)
+sendTable = dynamoDB.get_table(EmailStatsTableName)
 
 
 def formatDate(date):
