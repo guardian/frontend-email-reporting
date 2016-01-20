@@ -293,7 +293,7 @@ object StatsTable {
           ":v_enddate" -> new AttributeValue(endDate.toDateTimeISO.toString)
         ).asJava)
         .withExpressionAttributeNames(Map("#dateTime" -> "dateTime").asJava)
-
+        .withLimit(5000)
       dynamoDbClient.queryFuture(queryRequest) flatMap { result =>
         val theseItems = result.getItems.asScala.toSeq.flatMap { item =>
           EmailSendItem.fromAttributeValueMap(item.asScala.toMap)
