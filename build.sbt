@@ -12,7 +12,7 @@ libraryDependencies ++= Seq(
   ws,
   "com.amazonaws" % "aws-java-sdk" % "1.10.39",
   "joda-time" % "joda-time" % "2.9.1",
-  "com.gu" %% "play-googleauth" % "0.3.1",
+  "com.gu" %% "play-googleauth" % "0.3.3",
   specs2 % Test
 )
 
