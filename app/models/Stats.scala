@@ -1,14 +1,9 @@
 package models
 
-import java.util
-
 import awswrappers.dynamodb._
-import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec
-import com.amazonaws.services.dynamodbv2.document.utils.ValueMap
-import models.StatsTable.{EmailSendItem, EmailStats}
-import org.joda.time.{Interval, ReadableInstant, Duration, DateTime}
-import org.joda.time.format.ISODateTimeFormat
-import play.api.libs.json.{Writes, Json}
+import models.StatsTable.EmailStats
+import org.joda.time.{Duration, DateTime}
+import play.api.libs.json.Json
 import com.amazonaws.services.dynamodbv2.model._
 import java.util.{HashMap => JMap}
 
@@ -240,7 +235,7 @@ object StatsTable {
   val TableName = "email-send-report-TEST"
 
   def query(id: Int, startDate: DateTime, endDate: DateTime): Future[Seq[EmailSendItem]]  = {
-    def iter(lastEvaluatedKey: Option[java.util.Map[String, AttributeValue]], otherItems: Seq[EmailSendItem]): Future[Seq[StatsTable.EmailSendItem]] = {
+    def iter(lastEvaluatedKey: Option[java.util.Map[String, AttributeValue]] = None): Future[Seq[StatsTable.EmailSendItem]] = {
       val queryRequest = new QueryRequest()
         .withTableName(TableName)
         .withKeyConditionExpression("listId = :v_id AND #dateTime BETWEEN :v_startdate AND :v_enddate")
@@ -268,21 +263,22 @@ object StatsTable {
         .withExclusiveStartKey(lastEvaluatedKey.orNull)
 
       dynamoDbClient.queryFuture(queryRequest) flatMap { result =>
-        println("woot")
         val theseItems = result.getItems.asScala.toSeq.flatMap { item =>
           EmailSendItem.fromAttributeValueMap(item.asScala.toMap)
         }
 
         Option(result.getLastEvaluatedKey) match {
           case Some(nextKey) =>
-            iter(Some(nextKey), theseItems ++ otherItems)
+            iter(Some(nextKey)) map { otherItems =>
+              theseItems ++ otherItems
+            }
           case None =>
-            Future.successful(theseItems ++ otherItems)
+            Future.successful(theseItems)
         }
       }
     }
 
-    iter(None, Seq[EmailSendItem]()).map(_.sortBy(x => x.dateTime))
+    iter().map(_.sortBy(x => x.dateTime))
 
   }
 }
