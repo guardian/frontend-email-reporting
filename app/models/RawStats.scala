@@ -23,7 +23,7 @@ object RawStats {
     37 -> "UK Today",
     1493 -> "US Today",
     1506 -> "AU Today",
-    3573 -> "The Minute")
+    3599 -> "The Minute")
 
   //Aim of class is to convert directly to JSON used by highcharts
   case class InsertMetricGraphStructure(
