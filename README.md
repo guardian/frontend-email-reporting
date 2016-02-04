@@ -1,6 +1,8 @@
 Frontend Email Reporter
 =================================
 
+[![Build Status](https://travis-ci.org/guardian/frontend-email-reporting.svg?branch=master)](https://travis-ci.org/guardian/frontend-email-reporting)
+
 This application provides dashboards for email product from theguardian.com
 
 ### Install client-side dependencies
