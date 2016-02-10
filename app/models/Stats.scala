@@ -85,8 +85,8 @@ case class EmailStatsSeriesData(
 
   def withClickthroughRate: EmailStatsSeriesData = {
     val clickRateOpt = for {
-      clicks <- this.uniqueClicks.headOption
-      delivered <- this.numberDelivered.headOption
+      clicks <- this.uniqueClicks.lift(2)
+      delivered <- this.numberDelivered.lift(2)
     } yield {
         this.copy(
           clickthroughRate = round(clicks.count.toFloat / delivered.count.toFloat * 100)
@@ -97,8 +97,8 @@ case class EmailStatsSeriesData(
 
   def withOpenRate: EmailStatsSeriesData = {
     val openRateOpt = for {
-      opens <- this.uniqueOpens.headOption
-      delivered <- this.numberDelivered.headOption
+      opens <- this.uniqueOpens.lift(2)
+      delivered <- this.numberDelivered.lift(2)
     } yield {
         this.copy(
           openRate = round(opens.count.toFloat / delivered.count.toFloat * 100)
