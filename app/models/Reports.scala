@@ -13,7 +13,12 @@ object Reports {
     "Guardian Today Au" -> 2014)
 
   def buildBasicStats(data: Seq[EmailSendItem]): JsValue = {
-    EmailStatsSeriesData.toJson(mergeStats(data).groupByDay)
+    val stats = mergeStats(data)
+      .groupByDay
+      .withClickthroughRate
+      .withOpenRate
+
+    EmailStatsSeriesData.toJson(stats)
   }
 
   def mergeStats(data: Seq[EmailSendItem]): EmailStatsSeriesData = {

@@ -4,7 +4,14 @@
 
     @lists.map{ case (listName, id) =>
 
-        <div id="chart@id"></div>
+        <div class="row">
+            <div id="chart@id" class="col-sm-9"></div>
+            <div id="chart@{id}_stats" class="col-sm-3" style="margin-top:20px">
+                <div><h2><span class="openrate"></span> %</h2><span class="text-muted">Open Rate</span></div>
+                <div><h2><span class="clickthrough"></span> %</h2><span class="text-muted">Click Through</span></div>
+            </div>
+        </div>
+
         <script type="text/javascript">
             getData();
             function getData(){
@@ -16,6 +23,10 @@
         </script>
     }
     <script type="text/javascript">
+        function updateStats(data, id){
+            $('#chart' + id + '_stats .openrate').text(data.openRate);
+            $('#chart' + id + '_stats .clickthrough').text(data.clickThroughRate);
+        }
         function parseDateTime(data){
             return data.map(function(item){
                 return {
@@ -97,9 +108,10 @@
                             shadow: true
                         }
                     },
-                    series: EnableFields(parseDateTime(data))
+                    series: EnableFields(parseDateTime(data.emailData))
                 });
             });
+            updateStats(data, id);
         }
 
     </script>
