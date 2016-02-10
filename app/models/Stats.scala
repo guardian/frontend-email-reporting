@@ -3,7 +3,7 @@ package models
 import awswrappers.dynamodb._
 import models.StatsTable.EmailStats
 import org.joda.time.{Duration, DateTime}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, JsObject, Json}
 import com.amazonaws.services.dynamodbv2.model._
 import java.util.{HashMap => JMap}
 
@@ -33,7 +33,9 @@ case class EmailStatsSeriesData(
    uniqueOpens: List[DateTimePoint],
    numberSent: List[DateTimePoint],
    numberDelivered: List[DateTimePoint],
-   unsubscribes: List[DateTimePoint]
+   unsubscribes: List[DateTimePoint],
+   openRate: Double = 0,
+   clickthroughRate: Double = 0
    ) {
 
   def ++ (b: EmailStatsSeriesData): EmailStatsSeriesData = {
@@ -80,6 +82,33 @@ case class EmailStatsSeriesData(
       newItems.lastOption.orElse(None)
     }.toList.flatten
   }
+
+  def withClickthroughRate: EmailStatsSeriesData = {
+    val clickRateOpt = for {
+      clicks <- this.uniqueClicks.headOption
+      delivered <- this.numberDelivered.headOption
+    } yield {
+        this.copy(
+          clickthroughRate = round(clicks.count.toFloat / delivered.count.toFloat * 100)
+        )
+      }
+    clickRateOpt.getOrElse(this)
+  }
+
+  def withOpenRate: EmailStatsSeriesData = {
+    val openRateOpt = for {
+      opens <- this.uniqueOpens.headOption
+      delivered <- this.numberDelivered.headOption
+    } yield {
+        this.copy(
+          openRate = round(opens.count.toFloat / delivered.count.toFloat * 100)
+        )
+      }
+    openRateOpt.getOrElse(this)
+  }
+  def round(n: Float): Double = {
+    BigDecimal(n).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+  }
 }
 
 object EmailStatsSeriesData {
@@ -97,8 +126,8 @@ object EmailStatsSeriesData {
     } else { EmailStatsSeriesData.fromStats(timeSeries.head) }
   }
 
-  def toJson(a: EmailStatsSeriesData) = {
-    Json.toJson(List(
+  def toJson(a: EmailStatsSeriesData): JsValue = {
+    val emailData = Json.toJson(List(
       JsonDataPoint("existingUndeliverables", a.existingUndeliverables),
       JsonDataPoint("existingUnsubscribes", a.existingUnsubscribes),
       JsonDataPoint("hardBounces", a.hardBounces),
@@ -111,6 +140,11 @@ object EmailStatsSeriesData {
       JsonDataPoint("numberDelivered", a.numberDelivered),
       JsonDataPoint("unsubscribes", a.unsubscribes)
       )
+    )
+    Json.obj(
+      "emailData" -> emailData,
+      "clickThroughRate" -> a.clickthroughRate,
+      "openRate" -> a.openRate
     )
   }
 
