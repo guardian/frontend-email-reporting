@@ -28,7 +28,6 @@ package object models {
         x.failed foreach {
           error => Logger.error(s"Error de-serializing $k as Long", error)
         }
-
         x.toOption
       })
     }
@@ -40,7 +39,6 @@ package object models {
         x.failed foreach {
           error => Logger.error(s"Error de-serializing $k as Int", error)
         }
-
         x.toOption
       })
     }

@@ -10,7 +10,11 @@ object Reports {
     "Guardian Today Uk all" -> 111,
     "Guardian Today Uk new" -> 16216,
     "Guardian Today Us" -> 16125,
-    "Guardian Today Au" -> 2014)
+    "Guardian Today Au" -> 2014,
+    "The Fiver" -> 109,
+    "The Minute" -> 16447,
+    "NHS" -> 16422,
+    "Close Up" -> 16)
 
   def buildBasicStats(data: Seq[EmailSendItem]): JsValue = {
     val stats = mergeStats(data)

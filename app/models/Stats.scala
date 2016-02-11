@@ -28,7 +28,6 @@ case class EmailStatsSeriesData(
    hardBounces: List[DateTimePoint],
    softBounces: List[DateTimePoint],
    otherBounces: List[DateTimePoint],
-   forwardedEmails: List[DateTimePoint],
    uniqueClicks: List[DateTimePoint],
    uniqueOpens: List[DateTimePoint],
    numberSent: List[DateTimePoint],
@@ -45,7 +44,6 @@ case class EmailStatsSeriesData(
       this.hardBounces ++ b.hardBounces,
       this.softBounces ++ b.softBounces,
       this.otherBounces ++ b.otherBounces,
-      this.forwardedEmails ++ b.forwardedEmails,
       this.uniqueClicks ++ b.uniqueClicks,
       this.uniqueOpens ++ b.uniqueOpens,
       this.numberSent ++ b.numberSent,
@@ -61,7 +59,6 @@ case class EmailStatsSeriesData(
       filterByDay(this.hardBounces),
       filterByDay(this.softBounces),
       filterByDay(this.otherBounces),
-      filterByDay(this.forwardedEmails),
       filterByDay(this.uniqueClicks),
       filterByDay(this.uniqueOpens),
       filterByDay(this.numberSent),
@@ -72,15 +69,22 @@ case class EmailStatsSeriesData(
 
   def filterByDay(items: List[DateTimePoint]): List[DateTimePoint] = {
     //work out total duration of time series
-    val start = new DateTime(items.head.timestamp)
-    val end = new DateTime(items.last.timestamp)
-    val days = new Duration(start, end).getStandardDays.toInt
-    //filter so we only have one item per day
-    (0 to days).map { day =>
-      val newItems = items.filter(item => new DateTime(item.timestamp).toLocalDate == start.plusDays(day).toLocalDate)
-      //sometimes there are no entry for a day, so just don't report a value for that day
-      newItems.lastOption.orElse(None)
-    }.toList.flatten
+    val listOpt = for {
+      start <- items.headOption
+      end <- items.lastOption
+    } yield {
+      val startDate = new DateTime(start.timestamp)
+      val endDate = new DateTime(end.timestamp)
+      val days = new Duration(startDate, endDate).getStandardDays.toInt
+      //filter so we only have one item per day
+      (0 to days).map { day =>
+        val newItems = items.filter(item => new DateTime(item.timestamp).toLocalDate == startDate.plusDays(day).toLocalDate)
+        //sometimes there are no entry for a day, so just don't report a value for that day
+        val itemRet = newItems.lastOption.orElse(None)
+        itemRet
+      }.toList.flatten
+    }
+    listOpt.getOrElse(List.empty)
   }
 
   def withClickthroughRate: EmailStatsSeriesData = {
@@ -133,7 +137,6 @@ object EmailStatsSeriesData {
       JsonDataPoint("hardBounces", a.hardBounces),
       JsonDataPoint("softBounces", a.softBounces),
       JsonDataPoint("otherBounces", a.otherBounces),
-      JsonDataPoint("forwardedEmails", a.forwardedEmails),
       JsonDataPoint("uniqueClicks", a.uniqueClicks),
       JsonDataPoint("uniqueOpens", a.uniqueOpens),
       JsonDataPoint("numberSent", a.numberSent),
@@ -155,7 +158,6 @@ object EmailStatsSeriesData {
       List(DateTimePoint(stats.dateTime, stats.hardBounces)),
       List(DateTimePoint(stats.dateTime, stats.softBounces)),
       List(DateTimePoint(stats.dateTime, stats.otherBounces)),
-      List(DateTimePoint(stats.dateTime, stats.forwardedEmails)),
       List(DateTimePoint(stats.dateTime, stats.uniqueClicks)),
       List(DateTimePoint(stats.dateTime, stats.uniqueOpens)),
       List(DateTimePoint(stats.dateTime, stats.numberSent)),
@@ -165,7 +167,6 @@ object EmailStatsSeriesData {
   }
 
   def empty = EmailStatsSeriesData(
-    List.empty[DateTimePoint],
     List.empty[DateTimePoint],
     List.empty[DateTimePoint],
     List.empty[DateTimePoint],
@@ -191,7 +192,6 @@ object StatsTable {
     implicit val jsonReads = Json.reads[EmailSendItem]
 
     def fromAttributeValueMap(xs: Map[String, AttributeValue]) = {
-
       for {
         listId <- xs.getString("listId")
         dateTime <- xs.getString("dateTime")
@@ -201,31 +201,29 @@ object StatsTable {
         hardBounces <- xs.getInt("HardBounces")
         softBounces <- xs.getInt("SoftBounces")
         otherBounces <- xs.getInt("OtherBounces")
-        forwardedEmails <- xs.getInt("ForwardedEmails")
         uniqueClicks <- xs.getInt("UniqueClicks")
         uniqueOpens <- xs.getInt("UniqueOpens")
         numberSent <- xs.getInt("NumberSent")
         numberDelivered <- xs.getInt("NumberDelivered")
         unsubscribes <- xs.getInt("Unsubscribes")
       } yield {
-          EmailSendItem(
-            listId,
+        EmailSendItem(
+          listId,
+          dateTime,
+          sendDate,
+          EmailStats(
             dateTime,
-            sendDate,
-            EmailStats(
-              dateTime,
-              existingUndeliverables,
-              existingUnsubscribes,
-              hardBounces,
-              softBounces,
-              otherBounces,
-              forwardedEmails,
-              uniqueClicks,
-              uniqueOpens,
-              numberSent,
-              numberDelivered,
-              unsubscribes)
-          )
+            existingUndeliverables,
+            existingUnsubscribes,
+            hardBounces,
+            softBounces,
+            otherBounces,
+            uniqueClicks,
+            uniqueOpens,
+            numberSent,
+            numberDelivered,
+            unsubscribes)
+        )
       }
     }
   }
@@ -243,7 +241,6 @@ object StatsTable {
      hardBounces: Int,
      softBounces: Int,
      otherBounces: Int,
-     forwardedEmails: Int,
      uniqueClicks: Int,
      uniqueOpens: Int,
      numberSent: Int,
