@@ -192,8 +192,6 @@ object StatsTable {
     implicit val jsonReads = Json.reads[EmailSendItem]
 
     def fromAttributeValueMap(xs: Map[String, AttributeValue]) = {
-      println("try")
-      println(xs)
       for {
         listId <- xs.getString("listId")
         dateTime <- xs.getString("dateTime")
@@ -209,24 +207,23 @@ object StatsTable {
         numberDelivered <- xs.getInt("NumberDelivered")
         unsubscribes <- xs.getInt("Unsubscribes")
       } yield {
-        println("and pass !")
-          EmailSendItem(
-            listId,
+        EmailSendItem(
+          listId,
+          dateTime,
+          sendDate,
+          EmailStats(
             dateTime,
-            sendDate,
-            EmailStats(
-              dateTime,
-              existingUndeliverables,
-              existingUnsubscribes,
-              hardBounces,
-              softBounces,
-              otherBounces,
-              uniqueClicks,
-              uniqueOpens,
-              numberSent,
-              numberDelivered,
-              unsubscribes)
-          )
+            existingUndeliverables,
+            existingUnsubscribes,
+            hardBounces,
+            softBounces,
+            otherBounces,
+            uniqueClicks,
+            uniqueOpens,
+            numberSent,
+            numberDelivered,
+            unsubscribes)
+        )
       }
     }
   }
