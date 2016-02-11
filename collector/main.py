@@ -24,7 +24,7 @@ def backfillDatabase():
     Backfills the dynamoDB with dates
     :return: None
     """
-    sends = list(query.getLastNDaySends(2))
+    sends = list(query.getLastNDaySends(30))
     print 'Received {0} sends'.format(len(sends))
     for send in sends:
         print 'Putting SEND to dynamo: {0}'.format(send)

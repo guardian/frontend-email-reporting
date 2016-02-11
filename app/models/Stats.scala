@@ -72,15 +72,21 @@ case class EmailStatsSeriesData(
 
   def filterByDay(items: List[DateTimePoint]): List[DateTimePoint] = {
     //work out total duration of time series
-    val start = new DateTime(items.head.timestamp)
-    val end = new DateTime(items.last.timestamp)
-    val days = new Duration(start, end).getStandardDays.toInt
-    //filter so we only have one item per day
-    (0 to days).map { day =>
-      val newItems = items.filter(item => new DateTime(item.timestamp).toLocalDate == start.plusDays(day).toLocalDate)
-      //sometimes there are no entry for a day, so just don't report a value for that day
-      newItems.lastOption.orElse(None)
-    }.toList.flatten
+    val listOpt = for {
+      start <- items.headOption
+      end <- items.lastOption
+    } yield {
+      val startDate = new DateTime(start.timestamp)
+      val endDate = new DateTime(end.timestamp)
+      val days = new Duration(startDate, endDate).getStandardDays.toInt
+      //filter so we only have one item per day
+      (0 to days).map { day =>
+        val newItems = items.filter(item => new DateTime(item.timestamp).toLocalDate == startDate.plusDays(day).toLocalDate)
+        //sometimes there are no entry for a day, so just don't report a value for that day
+        newItems.lastOption.orElse(None)
+      }.toList.flatten
+    }
+    listOpt.getOrElse(List.empty)
   }
 
   def withClickthroughRate: EmailStatsSeriesData = {
