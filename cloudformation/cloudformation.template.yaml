@@ -16,7 +16,7 @@ Parameters:
   ImageId:
     Description: AMI id
     Type: AWS::EC2::Image::Id
-    Default: "ami-8b60cef8"
+    Default: "ami-5860d22b"
   StatsTableName:
     Description: DynamoDB table name for stats
     Type: String
