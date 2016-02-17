@@ -103,3 +103,8 @@ body {
   display: inline-block;
   border-radius: 50%;
 }
+
+.chart_stats {
+  margin-top:20px;
+  display:none;
+}

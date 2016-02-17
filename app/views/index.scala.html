@@ -6,9 +6,18 @@
 
         <div class="row">
             <div id="chart@id" class="col-sm-9"></div>
-            <div id="chart@{id}_stats" class="col-sm-3" style="margin-top:20px">
-                <div><h2><span class="openrate"></span> %</h2><span class="text-muted">Open Rate</span></div>
-                <div><h2><span class="clickthrough"></span> %</h2><span class="text-muted">Click Through</span></div>
+            <div id="chart@{id}_stats" class="col-sm-3 chart_stats">
+                <div>
+                    <h2><span class="openrate"></span> %</h2>
+                    <span class="text-muted">Open Rate</span><br>
+                    <span class="openagainstavg"></span> on 7d avg.
+                </div>
+                <div>
+                    <h2><span class="clickthrough"></span> %</h2>
+                    <span class="text-muted">Click Through</span><br>
+                    <span class="clickagainstavg"></span> on 7d avg.
+                </div>
+
             </div>
         </div>
 
@@ -26,6 +35,16 @@
         function updateStats(data, id){
             $('#chart' + id + '_stats .openrate').text(data.openRate);
             $('#chart' + id + '_stats .clickthrough').text(data.clickThroughRate);
+
+            var openChange = data.openRateChange;
+            var openClass =  openChange > 0 ? "text-success" : "text-warning";
+            $('#chart' + id + '_stats .openagainstavg').text(openChange + " %").addClass(openClass);
+
+            var clickChange = data.clickThroughChange;
+            var clickClass =  clickChange > 0 ? "text-success" : "text-warning";
+            $('#chart' + id + '_stats .clickagainstavg').text(clickChange + " %").addClass(clickClass);
+
+            $('#chart' + id + '_stats').toggle()
         }
         function parseDateTime(data){
             return data.map(function(item){
