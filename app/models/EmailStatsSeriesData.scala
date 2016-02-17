@@ -12,7 +12,6 @@ case class EmailStatsSeriesData (
                                   hardBounces: List[DateTimePoint],
                                   softBounces: List[DateTimePoint],
                                   otherBounces: List[DateTimePoint],
-                                  forwardedEmails: List[DateTimePoint],
                                   uniqueClicks: List[DateTimePoint],
                                   uniqueOpens: List[DateTimePoint],
                                   numberSent: List[DateTimePoint],
@@ -31,7 +30,6 @@ case class EmailStatsSeriesData (
       this.hardBounces ++ b.hardBounces,
       this.softBounces ++ b.softBounces,
       this.otherBounces ++ b.otherBounces,
-      this.forwardedEmails ++ b.forwardedEmails,
       this.uniqueClicks ++ b.uniqueClicks,
       this.uniqueOpens ++ b.uniqueOpens,
       this.numberSent ++ b.numberSent,
@@ -47,7 +45,6 @@ case class EmailStatsSeriesData (
       filterByDay(this.hardBounces),
       filterByDay(this.softBounces),
       filterByDay(this.otherBounces),
-      filterByDay(this.forwardedEmails),
       filterByDay(this.uniqueClicks),
       filterByDay(this.uniqueOpens),
       filterByDay(this.numberSent),
@@ -132,7 +129,6 @@ object EmailStatsSeriesData {
       JsonDataPoint("hardBounces", a.hardBounces),
       JsonDataPoint("softBounces", a.softBounces),
       JsonDataPoint("otherBounces", a.otherBounces),
-      JsonDataPoint("forwardedEmails", a.forwardedEmails),
       JsonDataPoint("uniqueClicks", a.uniqueClicks),
       JsonDataPoint("uniqueOpens", a.uniqueOpens),
       JsonDataPoint("numberSent", a.numberSent),
@@ -158,7 +154,6 @@ object EmailStatsSeriesData {
       List(DateTimePoint(stats.dateTime, stats.hardBounces)),
       List(DateTimePoint(stats.dateTime, stats.softBounces)),
       List(DateTimePoint(stats.dateTime, stats.otherBounces)),
-      List(DateTimePoint(stats.dateTime, stats.forwardedEmails)),
       List(DateTimePoint(stats.dateTime, stats.uniqueClicks)),
       List(DateTimePoint(stats.dateTime, stats.uniqueOpens)),
       List(DateTimePoint(stats.dateTime, stats.numberSent)),
@@ -168,7 +163,6 @@ object EmailStatsSeriesData {
   }
 
   def empty = EmailStatsSeriesData(
-    List.empty[DateTimePoint],
     List.empty[DateTimePoint],
     List.empty[DateTimePoint],
     List.empty[DateTimePoint],

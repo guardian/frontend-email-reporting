@@ -27,7 +27,6 @@ object StatsTable {
     implicit val jsonReads = Json.reads[EmailSendItem]
 
     def fromAttributeValueMap(xs: Map[String, AttributeValue]) = {
-
       for {
         listId <- xs.getString("listId")
         dateTime <- xs.getString("dateTime")
@@ -37,31 +36,29 @@ object StatsTable {
         hardBounces <- xs.getInt("HardBounces")
         softBounces <- xs.getInt("SoftBounces")
         otherBounces <- xs.getInt("OtherBounces")
-        forwardedEmails <- xs.getInt("ForwardedEmails")
         uniqueClicks <- xs.getInt("UniqueClicks")
         uniqueOpens <- xs.getInt("UniqueOpens")
         numberSent <- xs.getInt("NumberSent")
         numberDelivered <- xs.getInt("NumberDelivered")
         unsubscribes <- xs.getInt("Unsubscribes")
       } yield {
-          EmailSendItem(
-            listId,
+        EmailSendItem(
+          listId,
+          dateTime,
+          sendDate,
+          EmailStats(
             dateTime,
-            sendDate,
-            EmailStats(
-              dateTime,
-              existingUndeliverables,
-              existingUnsubscribes,
-              hardBounces,
-              softBounces,
-              otherBounces,
-              forwardedEmails,
-              uniqueClicks,
-              uniqueOpens,
-              numberSent,
-              numberDelivered,
-              unsubscribes)
-          )
+            existingUndeliverables,
+            existingUnsubscribes,
+            hardBounces,
+            softBounces,
+            otherBounces,
+            uniqueClicks,
+            uniqueOpens,
+            numberSent,
+            numberDelivered,
+            unsubscribes)
+        )
       }
     }
   }
@@ -79,7 +76,6 @@ object StatsTable {
      hardBounces: Int,
      softBounces: Int,
      otherBounces: Int,
-     forwardedEmails: Int,
      uniqueClicks: Int,
      uniqueOpens: Int,
      numberSent: Int,

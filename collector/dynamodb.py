@@ -18,10 +18,12 @@ def putToSendTableWithDate(sendResult, date):
     """
     dateKey = formatDate(date)
 
+    sendResultDict = dict((k, v) for k, v in sendResult.asDict().iteritems() if v)
+
     return sendTable.new_item(
             hash_key=sendResult.emailSendDefinitionID,
             range_key=dateKey,
-            attrs=sendResult.asDict()).put()
+            attrs=sendResultDict).put()
 
 
 def putToSendTableWithNowDate(sendResult):
