@@ -17,6 +17,8 @@ object Reports {
       .groupByDay
       .withClickthroughRate
       .withOpenRate
+      .withWeeklyClickAverage
+      .withWeeklyOpenAverage
 
     EmailStatsSeriesData.toJson(stats)
   }
